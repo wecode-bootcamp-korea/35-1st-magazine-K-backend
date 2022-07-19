@@ -1,7 +1,8 @@
 from django.db import models
 
-from users.models    import TimeStempModel, User
+from users.models    import User
 from products.models import Product
+from core.models     import TimeStampModel
 
 class OrderStatus(models.Model):
     order_status = models.CharField(max_length=20)
@@ -9,10 +10,10 @@ class OrderStatus(models.Model):
     class Meta:
         db_table = 'order_statuses'
 
-class Order(TimeStempModel):
-    user_id         = models.ForeignKey(User, on_delete=models.CASCADE)
+class Order(TimeStampModel):
+    user_id         = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     order_status_id = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
-    order_number    = models.PositiveIntegerField()
+    order_number    = models.UUIDField()
 
     class Meta:
         db_table = 'orders'

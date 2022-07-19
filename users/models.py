@@ -1,13 +1,8 @@
 from django.db import models
 
-class TimeStempModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+from core.models import TimeStampModel
 
-    class Meta:
-        abstract = True
-
-class User(TimeStempModel):
+class User(TimeStampModel):
     user_name      = models.CharField(max_length=20, unique=True)
     password       = models.CharField(max_length=200)
     name           = models.CharField(max_length=20)

@@ -1,7 +1,4 @@
-from django.urls import path
-
-from products.views import ProductView
+pythofrom django.urls import path
 
 urlpatterns = [
-    path('/product', ProductView.as_view())
 ]

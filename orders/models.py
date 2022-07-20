@@ -11,17 +11,17 @@ class OrderStatus(models.Model):
         db_table = 'order_statuses'
 
 class Order(TimeStampModel):
-    user_id         = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    order_status_id = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
-    order_number    = models.UUIDField()
+    user         = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    order_status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
+    order_number = models.UUIDField()
 
     class Meta:
         db_table = 'orders'
 
 class OrderItem(models.Model):
-    product_id     = models.ForeignKey(Product, on_delete=models.CASCADE)
-    order_id       = models.ForeignKey(Order, on_delete=models.CASCADE)
-    order_quantity = models.PositiveIntegerField(max_length=3)
+    product        = models.ForeignKey(Product, on_delete=models.CASCADE)
+    order          = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order_quantity = models.PositiveIntegerField()
     order_price    = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:

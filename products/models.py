@@ -31,7 +31,7 @@ class Product(TimeStampModel):
     class Meta:
         db_table = 'products'
 
-class SubCateGoryProduct(models.Model):
+class SubCategoryProduct(models.Model):
     sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
     product      = models.ForeignKey(Product, on_delete=models.CASCADE)
 
@@ -39,7 +39,7 @@ class SubCateGoryProduct(models.Model):
         db_table = 'sub_categories_products'
 
 class ProductImage(models.Model):
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product  = models.OneToOneField(Product, on_delete=models.CASCADE, primary_key=True)
     main_url = models.CharField(max_length=200)
     sub_url  = models.CharField(max_length=200)
 

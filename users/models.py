@@ -11,7 +11,7 @@ class User(TimeStampModel):
     address_line_2 = models.CharField(max_length=100)
     phone_number   = models.CharField(max_length=50)
     email          = models.EmailField(max_length=50)
-    point          = models.DecimalField(max_digits=20, decimal_places=2)
+    point          = models.DecimalField(max_digits=20, decimal_places=2, default=0)
 
     class Meta:
         db_table = 'users'

@@ -9,7 +9,7 @@ from django.views           import View
 from django.http            import JsonResponse
 
 from users.models           import User
-from core.utils.validatior  import validator_user_name, validator_email, validator_password
+from core.utils.validatior  import validate_username, validate_email, validate_password
 
 class JoinView(View):
 
@@ -23,9 +23,9 @@ class JoinView(View):
             phone_number = data['phone_number']
             email        = data['email']
 
-            validator_user_name(username)
-            validator_email(email)
-            validator_password(password)
+            validate_username(username)
+            validate_email(email)
+            validate_password(password)
 
             if User.objects.filter(username = username).exists():
                 return JsonResponse({'MESSAGE':'Already_Registered_User'}, status=400) 

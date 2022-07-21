@@ -21,7 +21,7 @@ class Product(TimeStampModel):
     language          = models.CharField(max_length=20)
     size              = models.CharField(max_length=30)
     pages             = models.PositiveIntegerField()
-    date              = models.CharField(max_length=30)
+    published_date    = models.CharField(max_length=30)
     isbn              = models.CharField(max_length=20)
     description       = models.TextField(blank=False)
     issue_number      = models.PositiveIntegerField()

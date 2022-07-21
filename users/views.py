@@ -17,25 +17,23 @@ class JoinView(View):
         try: 
             data = json.loads(request.body)
 
-            user_name    = data['user_name']
+            username     = data['username']
             password     = data['password']
             name         = data['name']
             phone_number = data['phone_number']
             email        = data['email']
 
-            validator_user_name(user_name)
-
+            validator_user_name(username)
             validator_email(email)
-
             validator_password(password)
 
-            if User.objects.filter(user_name = user_name).exists():
+            if User.objects.filter(username = username).exists():
                 return JsonResponse({'MESSAGE':'Already_Registered_User'}, status=400) 
 
             hash_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
             User.objects.create(
-                user_name    = user_name,
+                username     = username,
                 password     = hash_password,
                 name         = name,
                 phone_number = phone_number,
@@ -57,10 +55,10 @@ class LoginView(View):
         try:
             data = json.loads(request.body)
 
-            user_name = data['user_name']
-            password  = data['password']
+            username = data['username']
+            password = data['password']
 
-            user = User.objects.get(user_name = user_name)
+            user = User.objects.get(username = username)
 
             if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)

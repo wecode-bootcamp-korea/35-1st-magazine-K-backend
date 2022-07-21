@@ -3,7 +3,7 @@ from django.db import models
 from core.models import TimeStampModel
 
 class User(TimeStampModel):
-    user_name      = models.CharField(max_length=20, unique=True)
+    username       = models.CharField(max_length=20, unique=True)
     password       = models.CharField(max_length=200)
     name           = models.CharField(max_length=20)
     zip_code       = models.CharField(max_length=10)

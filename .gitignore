@@ -404,8 +404,8 @@ my_settings.py
 db_upload.py
 
 main_categories.csv
-sub_categories.csv
+categories.csv
 products.csv
-sub_categories_products.csv
+categories_products.csv
 product_images.csv
 order_statuses.csv

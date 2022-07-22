@@ -1,5 +1,6 @@
 from django.views    import View
 from django.http     import JsonResponse
+
 from products.models import Category, Product
 
 class ProductDetailView(View):
@@ -24,7 +25,7 @@ class ProductDetailView(View):
                     'product_image_url': product.product_image_url,
                 }
             ]
-            return JsonResponse({'RESULTS' : results}, status=200)
+            return JsonResponse({'RESULTS':results}, status=200)
 
         except Product.DoesNotExist:
             return JsonResponse({'MESSAGE':'INVALID_PRODUCT'}, status=400)

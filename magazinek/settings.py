@@ -1,12 +1,14 @@
 from pathlib import Path
 
-from my_settings import DATABASES, SECRET_KEY
+from my_settings import DATABASES, SECRET_KEY, ALGORITHM
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = SECRET_KEY
 
 DEBUG = True
+
+ALGORITHM =ALGORITHM
 
 ALLOWED_HOSTS = ['*']
 
@@ -85,6 +87,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL= True
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = (

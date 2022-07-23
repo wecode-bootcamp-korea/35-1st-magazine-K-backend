@@ -1,18 +1,20 @@
-from django.views    import View
-from django.http     import JsonResponse
+from django.views     import View
+from django.http      import JsonResponse
 
 from products.models import Category, Product
 
 class ProductDetailView(View):
-    def get(self, request):
+    def get(self, request, product_id):
         try :
-            issue_number = int(request.GET.get('issue', None))
-            category     = int(request.GET.get('category', None))
-            product      = Product.objects.get(issue_number=issue_number)
-            category     = Category.objects.get(id=category)
-            results      = [
-                {
-                    'category'         : category.name,
+            if not Product.objects.filter(id=product_id).exists:
+                return JsonResponse({'MESSAGE':'NOT_FOUND_PRODUCT'}, status=404)
+
+            product  = Product.objects.get(id=product_id)
+            # print(product)
+            # category     = product.categoryproduct_set.all()
+            # print(category)
+            results = {
+                    # 'category'         : category,
                     'issue_number'     : product.issue_number,
                     'title'            : product.title,
                     'price'            : product.price,
@@ -24,12 +26,10 @@ class ProductDetailView(View):
                     'description'      : product.description,
                     'product_image_url': product.product_image_url,
                 }
-            ]
             return JsonResponse({'RESULTS':results}, status=200)
 
-        except Product.DoesNotExist:
-            return JsonResponse({'MESSAGE':'INVALID_PRODUCT'}, status=400)
-    
+        # except Product.DoesNotExist:
+        #     return JsonResponse({'MESSAGE':'INVALID_PRODUCT'}, status=404)
+
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
-

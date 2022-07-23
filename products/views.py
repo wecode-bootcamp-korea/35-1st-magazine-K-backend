@@ -10,14 +10,16 @@ class ProductView(View):
         limit    = int(request.GET.get('limit', 0))
         sort     = int(request.GET.get('sort', 0))
 
+        products = Product.objects.filter(categoryproduct__category_id=category)
+
         if sort == 0:
-            products = Product.objects.filter(categoryproduct__category_id=category).order_by('-issue_number')
+            sorted_products = products.order_by('-issue_number')
         elif sort == 1:
-            products = Product.objects.filter(categoryproduct__category_id=category).order_by('issue_number')
+            sorted_products = products.order_by('issue_number')
         elif sort == 2:
-            products = Product.objects.filter(categoryproduct__category_id=category).order_by('-price')
+            sorted_products = products.order_by('-price')
         elif sort == 3:
-            products = Product.objects.filter(categoryproduct__category_id=category).order_by('price')
+            sorted_products = products.order_by('price')
 
         result = [
             {
@@ -28,11 +30,11 @@ class ProductView(View):
                 'main_img_url_1': product.productimage.main_url,
                 'main_img_url_2': product.productimage.sub_url,
             }
-            for product in products[offset:limit]]
+            for product in sorted_products[offset:limit]]
 
         result.append(
             {
-                'cate_total' : len(products)
+                'category_total' : len(products)
             }
         )
 

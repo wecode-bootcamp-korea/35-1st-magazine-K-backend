@@ -4,14 +4,13 @@ from django.http      import JsonResponse
 from products.models import Category, Product
 
 class ProductDetailView(View):
-    def get(self, request, category_id, product_id):
+    def get(self, request, product_id):
         try :
-            product       = Product.objects.get(id=product_id)
-            category      = Category.objects.get(id=category_id)
-            category_name = Product.objects.filter(id=product_id).values('category__name')
+            product  = Product.objects.get(id=product_id)
+            category = Product.objects.filter(id=product_id).values('category__name')
 
             results = {
-                    'category'         : category_name[0]['category__name'],
+                    'category'         : category[0]['category__name'],
                     'issue_number'     : product.issue_number,
                     'title'            : product.title,
                     'price'            : product.price,
@@ -24,9 +23,6 @@ class ProductDetailView(View):
                     'product_image_url': product.product_image_url,
                 }
             return JsonResponse({'RESULTS':results}, status=200)
-            
-        except Category.DoesNotExist:
-            return JsonResponse({'MESSAGE':'INVALID_CATEGORY'}, status=404)
 
         except Product.DoesNotExist:
             return JsonResponse({'MESSAGE':'INVALID_PRODUCT'}, status=404)

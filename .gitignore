@@ -402,7 +402,7 @@ zsdoc/data
 
 my_settings.py
 
-db_uploader.py
+db_upload.py
 
 csv
 

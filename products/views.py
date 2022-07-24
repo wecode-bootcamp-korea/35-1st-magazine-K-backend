@@ -1,4 +1,3 @@
-from unicodedata import category
 from django.views     import View
 from django.http      import JsonResponse
 
@@ -11,9 +10,6 @@ class ProductDetailView(View):
             category      = Category.objects.get(id=category_id)
             category_name = Product.objects.filter(id=product_id).values('category__name')
 
-            # if not Category.objects.filter(id=category_id).exists:
-            #     return JsonResponse({'MESSAGE':'INVALID_CATEGORY_e'}, status=404)
-            
             results = {
                     'category'         : category_name[0]['category__name'],
                     'issue_number'     : product.issue_number,

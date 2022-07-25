@@ -1,5 +1,6 @@
-from django.views import View
-from django.http import JsonResponse
+from django.views     import View
+from django.http      import JsonResponse
+from django.db.models import Q
 
 from products.models import Product
 
@@ -30,7 +31,7 @@ class ProductView(View):
                 'main_img_url_1': product.productimage.main_url,
                 'main_img_url_2': product.productimage.sub_url,
             }
-            for product in sorted_products[offset:limit]]
+            for product in sorted_products[offset:offset+limit]]
 
         result.append(
             {

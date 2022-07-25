@@ -2,11 +2,18 @@ from django.db import models
 
 from core.models import TimeStampModel
 
-class Category(models.Model):
+class MainCategory(models.Model):
     name = models.CharField(max_length=20)
 
     class Meta:
-        db_table = 'categories'
+        db_table = 'main_categories'
+
+class SubCategory(models.Model):
+    name          = models.CharField(max_length=20)
+    main_category = models.ForeignKey(MainCategory, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'sub_categories'
 
 class Product(TimeStampModel):
     title             = models.CharField(max_length=30)
@@ -19,17 +26,17 @@ class Product(TimeStampModel):
     description       = models.TextField(blank=False)
     issue_number      = models.PositiveIntegerField()
     product_image_url = models.CharField(max_length=200)
-    category          = models.ManyToManyField(Category, through='CategoryProduct', related_name='product')
-
+    sub_category      = models.ManyToManyField(SubCategory, through='SubCategoryProduct', related_name='subcategory_product')
+    
     class Meta:
         db_table = 'products'
 
-class CategoryProduct(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
+class SubCategoryProduct(models.Model):
+    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
+    product      = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'categories_products'
+        db_table = 'sub_categories_products'
 
 class ProductImage(models.Model):
     product  = models.OneToOneField(Product, on_delete=models.CASCADE, primary_key=True)

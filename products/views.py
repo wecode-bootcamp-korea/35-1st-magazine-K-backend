@@ -3,8 +3,6 @@ from django.http import JsonResponse
 
 from products.models import Product
 
-from core.utils.login_decorator import login_decorator
-
 class ProductView(View):
     def get(self, request):
         print(request.user)

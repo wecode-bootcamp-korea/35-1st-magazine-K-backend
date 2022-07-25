@@ -61,7 +61,7 @@ class LoginView(View):
             if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
         
-            access_token = jwt.encode({'ID': user.id}, settings.SECRET_KEY, settings.ALGORITHM)
+            access_token = jwt.encode({'id': user.id}, settings.SECRET_KEY, settings.ALGORITHM)
 
             return JsonResponse({'MESSAGE':'SUCCESS', 'AUTHORIZATION':access_token}, status=200)
 

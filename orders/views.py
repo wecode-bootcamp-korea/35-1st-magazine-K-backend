@@ -4,9 +4,33 @@ from django.views import View
 from django.http  import JsonResponse
 
 from core.utils.login_decorator import login_decorator
-from orders.models import Order, OrderItem
+from orders.models              import Order, OrderItem, OrderStatus
+from products.models            import Product
+from users.models               import User
 
 class CartView(View):
+    @login_decorator
+    def get(self, request):
+        '''
+        카트 상태의 상품 조회
+
+        - 장바구니 모달창 또는 장바구니 페이지로 이동시 해당 유저의 장바구니 상품 조회
+        - http://localhost:8000/orders/cart
+        '''
+        user = request.user
+        CART_STATUS = 1
+
+        user_cart = Order.objects.filter(user=user.id).get(order_status=CART_STATUS).orderitem_set.all()
+
+        result = [{
+            'title'   : order.product.title,
+            'price'   : order.order_price,
+            'quantity': order.order_quantity,
+            'picture' : order.product.productimage.main_url
+        } for order in user_cart]
+
+        return JsonResponse({'result' : result}, status = 200)
+
     @login_decorator
     def post(self, request):
         '''
@@ -18,43 +42,43 @@ class CartView(View):
         try:
             data = json.loads(request.body)
 
-            user         = request.user    # login_decorator를 통해 토큰을 검사하여 로그인
-            product      = data['product'] # 해당 상품의 product_id 값
-            ORDER_STATUS = 1               # 장바구니 상태를 뜻하는 상수 (1 == 장바구니, 2 == 입금전 ....)
+            user         = request.user
+            product      = data['product']
+            CART_STATUS = 1
 
-            check_status  = Order.objects.get(order_status=ORDER_STATUS).id               # 주문 건이 장바구니 상태인지 확인을 위한 변수
-            check_product = OrderItem.objects.filter(product=product, order=check_status) # 클라이언트가 요청한 물품이 장바구니 상태의 물품인지 확인하기 위한 변수
+            selected_product = Product.objects.get(id=product)
+            
 
-            if Order.objects.filter(order_status=ORDER_STATUS).exists():                         # 장바구니 상태의 주문이 존재하는지 확인한다.
-                if check_product.exists():                                                       # 존재한다면 카트에 담을 상품이 장바구니에 있는지 확인한다.
-                    check_product.update(order_quantity=(OrderItem.objects.get(id=product) + 1)) # 있다면 기존에 생성된 상품 수량에 1개 더해준다.
+            if Order.objects.filter(user=User.objects.get(id=user.id), order_status=CART_STATUS).exists():
+                if OrderItem.objects.filter(product=product, order=Order.objects.filter(user=user.id).get(order_status=CART_STATUS).id).exists():
+                    ordered_item = OrderItem.objects.filter(product=product, order=Order.objects.filter(user=user.id).get(order_status=CART_STATUS).id)
+                    ordered_item.update(order_quantity=OrderItem.objects.filter(product=product).get(order=Order.objects.filter(user=user.id).get(order_status=CART_STATUS).id).order_quantity + 1)
                 else:
-                    # 카트에 클라이언트가 담을 상품이 존재하지 않는다면 신규로 생성한다.
                     OrderItem.objects.create(
-                        product        = product,
-                        order          = Order.objects.get(order_status=1).id,
+                        product        = selected_product,
+                        order          = Order.objects.get(user=user.id),
                         order_quantity = 1,
-                        order_price    = check_product.product.price
+                        order_price    = selected_product.price
                     )
             else:
-                # 장바구니에 상품이 존재하지 않는다면 신규 주문과 상품을 생성한다.
                 Order.objects.create(
-                    user         = user,
-                    order_status = ORDER_STATUS
+                    user         = User.objects.get(id=user.id),
+                    order_status = OrderStatus.objects.get(id = CART_STATUS)
                 )
                 OrderItem.objects.create(
-                    product        = product,
-                    order          = Order.objects.get(order_status=1).id,
+                    product        = selected_product,
+                    order          = Order.objects.get(user=user.id),
                     order_quantity = 1,
-                    order_price    = check_product.product.price
+                    order_price    = selected_product.price
                 )
 
-            items = OrderItem.objects.filter(order__user_id=user) # 클라이언트에 생성 혹은 수정된 장바구니 상품 정보를 전달하기 위한 Queryset 생성
+            items = OrderItem.objects.filter(order__user_id=user)
 
             result = [{
                 'title'   : item.product.title,
                 'price'   : item.order_price,
                 'quantity': item.order_quantity,
+                'picture' : item.product.productimage.main_url
             } for item in items]
    
             return JsonResponse({'result' : result}, status = 200)
@@ -65,7 +89,7 @@ class CartView(View):
     @login_decorator
     def patch(self, request):
         '''
-        장바구니에 올라간 물품의 수량 증감
+        장바구니에 올라간 상품 수량 증감
 
         - 웹 사이트의 장바구니 모달창 또는 장바구니 페이지에서 '+', '-' 버튼으로 상품 개수 증감
         - http://localhost:8000/orders/cart
@@ -73,24 +97,47 @@ class CartView(View):
         try:
             data = json.loads(request.body)
 
+            user        = request.user
             product     = data['product']     # 해당 제품 product_id 값
-            order       = data['order']       # 해당 주문 product_id 값
             calculation = data['calculation'] # 제품을 더할 것인지, 뺄 것인지 구분 (1 = 더하기, 0 = 빼기)
+            CART_STATUS = 1
 
-            check = OrderItem.objects.filter(order=order, product=product)
+            pick_products = OrderItem.objects.filter(order=Order.objects.filter(user=user.id).get(order_status=CART_STATUS), product=product)
+            pick_product  = OrderItem.objects.filter(order=Order.objects.filter(user=user.id).get(order_status=CART_STATUS)).get(product=product)
 
             if calculation == 1:
-                OrderItem.objects.update(
-                    count = check.update(order_quantity=(OrderItem.objects.get(id=product) + 1)) # 상품 개수 증가
+                pick_products.update(
+                    order_quantity=(pick_product.order_quantity + 1) # 상품 개수 증가
                 )
             elif calculation == 0:
-                OrderItem.objects.update(
-                    count = check.update(order_quantity=(OrderItem.objects.get(id=product) - 1)) # 상품 개수 감소
+                pick_products.update(
+                    order_quantity=(pick_product.order_quantity - 1) # 상품 개수 감소
                 )
 
-            result = {'order_quantity' : OrderItem.objects.get(product=product, order=order)}
+            result = {'order_quantity' : OrderItem.objects.filter(order=Order.objects.filter(user=user.id).get(order_status=CART_STATUS)).get(product=product).order_quantity}
 
             return JsonResponse({'result' : result}, status = 200)
         
+        except OrderItem.DoesNotExist:
+            return JsonResponse({'message' : 'DATA_NOT_EXIST'}, status = 400)
+
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+
+    @login_decorator
+    def delete(self, request, product):
+        '''
+        장바구니에 올라간 상품 삭제
+        
+        - http://localhost:8000/orders/cart
+        '''
+        try:
+            user = request.user
+            CART_STATUS = 1
+
+            OrderItem.objects.filter(order=Order.objects.filter(user=user.id).get(order_status=CART_STATUS).id, product=product).delete()
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
+        except OrderItem.DoesNotExist:
+            return JsonResponse({'message' : 'DATA_NOT_EXIST'}, status = 400)

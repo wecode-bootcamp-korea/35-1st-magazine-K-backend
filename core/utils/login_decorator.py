@@ -16,10 +16,10 @@ def login_decorator(func):
             return func(self, request, *args, **kwargs)
 
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':'INVALID_USER'}, stauts=401)
+            return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
 
         except jwt.exceptions.DecodeError:
-            return JsonResponse({'MESSAGE':'INVALID_PAYLOAD'}, stauts=401) 
+            return JsonResponse({'MESSAGE':'INVALID_PAYLOAD'}, status=401)
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)

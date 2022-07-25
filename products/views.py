@@ -24,6 +24,7 @@ class ProductView(View):
 
         result = [
             {
+                'product_id'    : product.id,
                 'title'         : product.title,
                 'issue_number'  : product.issue_number,
                 'main_category' : product.category.get(id=category).name,

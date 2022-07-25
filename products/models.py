@@ -6,14 +6,7 @@ class MainCategory(models.Model):
     name = models.CharField(max_length=20)
 
     class Meta:
-        db_table = 'main_categories'
-
-class SubCategory(models.Model):
-    name          = models.CharField(max_length=20)
-    main_category = models.ForeignKey(MainCategory, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'sub_categories'
+        db_table = 'categories'
 
 class Product(TimeStampModel):
     title             = models.CharField(max_length=30)
@@ -32,8 +25,8 @@ class Product(TimeStampModel):
         db_table = 'products'
 
 class SubCategoryProduct(models.Model):
-    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
-    product      = models.ForeignKey(Product, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'sub_categories_products'

@@ -6,7 +6,6 @@ from products.models import Product
 
 class ProductView(View):
     def get(self, request):
-        print(request.user)
         category = int(request.GET.get('category', 1))
         offset   = int(request.GET.get('offset', 0))
         limit    = int(request.GET.get('limit', 0))

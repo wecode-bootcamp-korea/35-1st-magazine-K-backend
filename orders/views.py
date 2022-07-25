@@ -42,8 +42,8 @@ class CartView(View):
         try:
             data = json.loads(request.body)
 
-            user         = request.user
-            product      = data['product']
+            user        = request.user
+            product     = data['product']
             CART_STATUS = 1
 
             selected_product = Product.objects.get(id=product)

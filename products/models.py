@@ -1,8 +1,9 @@
+from tkinter import CASCADE
 from django.db import models
 
 from core.models import TimeStampModel
 
-class MainCategory(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=20)
 
     class Meta:
@@ -19,17 +20,11 @@ class Product(TimeStampModel):
     description       = models.TextField(blank=False)
     issue_number      = models.PositiveIntegerField()
     product_image_url = models.CharField(max_length=200)
-    sub_category      = models.ManyToManyField(SubCategory, through='SubCategoryProduct', related_name='subcategory_product')
+    main_category     = models.ForeignKey(Category, null=True, on_delete=models.CASCADE ,related_name='main_category_product')
+    sub_category      = models.ForeignKey(Category, null=True, on_delete=models.CASCADE ,related_name='sub_category_product')
     
     class Meta:
         db_table = 'products'
-
-class SubCategoryProduct(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'sub_categories_products'
 
 class ProductImage(models.Model):
     product  = models.OneToOneField(Product, on_delete=models.CASCADE, primary_key=True)

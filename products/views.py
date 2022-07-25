@@ -1,16 +1,15 @@
 from django.views     import View
 from django.http      import JsonResponse
 
-from products.models import Category, Product
+from products.models  import Product
 
 class ProductDetailView(View):
     def get(self, request, product_id):
         try :
             product  = Product.objects.get(id=product_id)
-            category = Product.objects.filter(id=product_id).values('category__name')
 
             results = {
-                    'category'         : category[0]['category__name'],
+                    'category'         : product.main_category.name,
                     'issue_number'     : product.issue_number,
                     'title'            : product.title,
                     'price'            : product.price,

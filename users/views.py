@@ -1,7 +1,7 @@
 import json
-
 import bcrypt
 import jwt
+
 from django.core.exceptions import ValidationError
 from django.conf            import settings
 from django.views           import View

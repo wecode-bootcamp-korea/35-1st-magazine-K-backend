@@ -1,4 +1,5 @@
 from enum import Enum
+import uuid
 import json
 
 from django.views     import View
@@ -30,10 +31,11 @@ class CartView(View):
             cart_products = Order.objects.get(user_cart).orderitem_set.all()
 
             result = [{
-                'title'   : order.product.title,
-                'price'   : order.order_price,
-                'quantity': order.order_quantity,
-                'picture' : order.product.productimage.main_url
+                'product_id': order.product.id,
+                'title'     : order.product.title,
+                'price'     : order.order_price,
+                'quantity'  : order.order_quantity,
+                'picture'   : order.product.productimage.main_url
             } for order in cart_products]
 
             return JsonResponse({'result' : result}, status = 200)
@@ -80,13 +82,14 @@ class CartView(View):
             items = OrderItem.objects.filter(order__user_id=user)
 
             result = [{
-                'title'   : item.product.title,
-                'price'   : item.order_price,
-                'quantity': item.order_quantity,
-                'picture' : item.product.productimage.main_url
+                'product_id': item.product.id,
+                'title'     : item.product.title,
+                'price'     : item.order_price,
+                'quantity'  : item.order_quantity,
+                'picture'   : item.product.productimage.main_url
             } for item in items]
    
-            return JsonResponse({'result' : result}, status = 200)
+            return JsonResponse({'result' : result}, status = 201)
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
@@ -117,7 +120,7 @@ class CartView(View):
             return JsonResponse({'result' : result}, status = 200)
         
         except OrderItem.DoesNotExist:
-            return JsonResponse({'message' : 'DATA_NOT_EXIST'}, status = 400)
+            return JsonResponse({'message' : 'DATA_NOT_EXIST'}, status = 404)
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
@@ -143,4 +146,4 @@ class CartView(View):
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         except OrderItem.DoesNotExist:
-            return JsonResponse({'message' : 'PRODUCT_NOT_EXIST'}, status = 400)
+            return JsonResponse({'message' : 'PRODUCT_NOT_EXIST'}, status = 404)

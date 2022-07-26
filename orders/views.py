@@ -128,6 +128,11 @@ class CartView(View):
 
             OrderItem.objects.get(user_cart_product).delete()
 
+            if OrderItem.objects.filter(order__in=Order.objects.filter(user_cart)).exists():
+                pass
+            else:
+                Order.objects.get(user_cart).delete()
+
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         except OrderItem.DoesNotExist:

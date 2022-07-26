@@ -1,6 +1,6 @@
-from django.views     import View
-from django.http      import JsonResponse
-from django.db.models import Q
+from django.views           import View
+from django.http            import JsonResponse
+from django.db.models       import Q
 from django.core.exceptions import FieldError
 
 from products.models import Product

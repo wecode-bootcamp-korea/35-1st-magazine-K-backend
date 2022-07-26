@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 
 from django.views     import View
@@ -9,14 +10,24 @@ from orders.models              import Order, OrderItem, OrderStatus
 from products.models            import Product
 from users.models               import User
 
+class STATUS(Enum):
+    CART                   = 1
+    BEFORE_DEPOSIT         = 2
+    PREPARING_FOR_DELIVERY = 3
+    SHIPPING               = 4
+    DELIVERY_COMPLETED     = 5
+    EXCHANGE               = 6
+    RETURN                 = 7
+
 class CartView(View):
     @login_decorator
     def get(self, request):
         try:
-            user        = request.user
-            CART_STATUS = 1
+            user = request.user
 
-            cart_products = Order.objects.get(Q(user=User.objects.get(id=user.id)) & Q(order_status=CART_STATUS)).orderitem_set.all()
+            user_cart = Q(user=user.id) & Q(order_status=STATUS.CART.value)
+
+            cart_products = Order.objects.get(user_cart).orderitem_set.all()
 
             result = [{
                 'title'   : order.product.title,
@@ -26,23 +37,21 @@ class CartView(View):
             } for order in cart_products]
 
             return JsonResponse({'result' : result}, status = 200)
-        
+
         except Order.DoesNotExist:
             return JsonResponse({'message' : "EMPTY_CART"})
         
     @login_decorator
-    def post(self, request):
+    def post(self, request, count):
         try:
             data = json.loads(request.body)
 
-            user        = request.user
-            product     = data['product']
-            count       = data['count']
-            CART_STATUS = 1
+            user    = request.user
+            product = data['product']
 
             selected_product = Product.objects.get(id=product)
-            
-            user_cart         = Q(user=User.objects.get(id=user.id)) & Q(order_status=CART_STATUS)
+
+            user_cart         = Q(user=user.id) & Q(order_status=STATUS.CART.value)
             user_cart_product = Q(product=Product.objects.get(id=product)) & Q(order__in=Order.objects.filter(user_cart))
 
             if Order.objects.filter(user_cart).exists():
@@ -59,7 +68,7 @@ class CartView(View):
             else:
                 Order.objects.create(
                     user         = User.objects.get(id=user.id),
-                    order_status = OrderStatus.objects.get(id = CART_STATUS)
+                    order_status = OrderStatus.objects.get(id=STATUS.CART.value)
                 )
                 OrderItem.objects.create(
                     product        = selected_product,
@@ -90,9 +99,8 @@ class CartView(View):
             user        = request.user
             product     = data['product']
             calculation = data['calculation']
-            CART_STATUS = 1
 
-            user_cart         = Q(user=User.objects.get(id=user.id)) & Q(order_status=CART_STATUS)
+            user_cart         = Q(user=user.id) & Q(order_status=STATUS.CART.value)
             user_cart_product = Q(product=Product.objects.get(id=product)) & Q(order__in=Order.objects.filter(user_cart))
 
             if calculation == 'addition':
@@ -121,9 +129,8 @@ class CartView(View):
 
             user        = request.user
             product     = data['product']
-            CART_STATUS = 1
 
-            user_cart         = Q(user=User.objects.get(id=user.id)) & Q(order_status=CART_STATUS)
+            user_cart         = Q(user=user.id) & Q(order_status=STATUS.CART.value)
             user_cart_product = Q(product=Product.objects.get(id=product)) & Q(order__in=Order.objects.filter(user_cart))            
 
             OrderItem.objects.get(user_cart_product).delete()

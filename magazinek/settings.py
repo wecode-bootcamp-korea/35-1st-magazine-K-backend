@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'users',
     'orders',
     'core',
+    'comments',
 ]
 
 MIDDLEWARE = [

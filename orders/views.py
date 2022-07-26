@@ -37,7 +37,7 @@ class CartView(View):
             } for order in cart_products]
 
             return JsonResponse({'result' : result}, status = 200)
-
+        
         except Order.DoesNotExist:
             return JsonResponse({'message' : "EMPTY_CART"})
         

@@ -5,7 +5,7 @@ from core.models import TimeStampModel
 class Comment(TimeStampModel):
     user    = models.ForeignKey('users.user', on_delete=models.CASCADE)
     product = models.ForeignKey('products.product', on_delete=models.CASCADE)
-    content = models.CharField(max_length=500)
+    content = models.TextField(blank=True)
     rating  = models.DecimalField(max_digits=2, decimal_places=1, null=True)
 
     class Meta: 

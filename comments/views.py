@@ -13,15 +13,18 @@ class CommentView(View):
         try :  
             data    = json.loads(request.body)
             user    = request.user
+            print(user)
             content = data['content'] 
             rating  = data['rating']
 
+            product = Product.objects.get(id = product_id)
+
             Comment.objects.create(
-                user_id    = user.id,
+                user_id    = request.user.id,
                 content    = content,
                 rating     = rating,
-                product_id = product_id,
-            ) 
+                product_id = product.id
+            )
             return JsonResponse({'MESSAGE':'SUCCESE'}, status=200)
 
         except Product.DoesNotExist: 

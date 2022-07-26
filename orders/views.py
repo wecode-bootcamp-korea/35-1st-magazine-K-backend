@@ -13,7 +13,7 @@ class CartView(View):
     @login_decorator
     def get(self, request):
         try:
-            user = request.user
+            user        = request.user
             CART_STATUS = 1
 
             cart_products = Order.objects.get(Q(user=User.objects.get(id=user.id)) & Q(order_status=CART_STATUS)).orderitem_set.all()
@@ -41,7 +41,6 @@ class CartView(View):
             CART_STATUS = 1
 
             selected_product = Product.objects.get(id=product)
-            user_order = Order.objects.get(user=user.id)
             
             user_cart         = Q(user=User.objects.get(id=user.id)) & Q(order_status=CART_STATUS)
             user_cart_product = Q(product=Product.objects.get(id=product)) & Q(order__in=Order.objects.filter(user_cart))
@@ -52,7 +51,7 @@ class CartView(View):
                 else:
                     OrderItem.objects.create(
                         product        = selected_product,
-                        order          = user_order,
+                        order          = Order.objects.get(user=user.id),
                         order_quantity = count,
                         order_price    = selected_product.price
                     )
@@ -64,7 +63,7 @@ class CartView(View):
                 )
                 OrderItem.objects.create(
                     product        = selected_product,
-                    order          = user_order,
+                    order          = Order.objects.get(user=user.id),
                     order_quantity = count,
                     order_price    = selected_product.price
                 )
@@ -120,8 +119,8 @@ class CartView(View):
         try:
             data = json.loads(request.body)
 
-            user = request.user
-            product = data['product']
+            user        = request.user
+            product     = data['product']
             CART_STATUS = 1
 
             user_cart         = Q(user=User.objects.get(id=user.id)) & Q(order_status=CART_STATUS)

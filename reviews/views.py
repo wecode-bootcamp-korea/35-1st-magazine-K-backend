@@ -13,20 +13,19 @@ class ReviewView(View):
     @login_decorator
     def post(self, request, product_id):
         try:
-            data    = json.loads(request.body)
-            user    = request.user
-            content = data['content']
-            rating  = data['rating']
-
-            delivered = OrderStatus.objects.get(id=5)
-
+            data            = json.loads(request.body)
+            user            = request.user
+            content         = data['content']
+            rating          = data['rating']
+            
+            delivered       = OrderStatus.objects.get(id=5)
             orderd_products = OrderItem.objects.filter(order__user=user, order__order_status=delivered, product_id=product_id)
-            print(orderd_products)
-            if not OrderItem.objects.filter(order__user=user, order__order_status=delivered, product_id=product_id):
+            
+            if not orderd_products.exists():
                 return JsonResponse({'MESSAGE':'INVALID_REQUEST'}, status=401)
 
             Review.objects.create(
-                user_id    = request.user.id,
+                user_id    = user.id,
                 content    = content,
                 rating     = rating,
                 product_id = product_id,

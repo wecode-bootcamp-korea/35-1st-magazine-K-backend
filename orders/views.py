@@ -4,10 +4,10 @@ import json
 
 from django.views     import View
 from django.http      import JsonResponse
-from django.db.models import Q
+from django.db        import transaction
 
 from core.utils.login_decorator import login_decorator
-from orders.models              import Order, OrderItem, OrderStatus
+from orders.models              import Order, OrderItem
 from products.models            import Product
 from users.models               import User
 
@@ -23,122 +23,98 @@ class OrderStatusEnum(Enum):
 class CartView(View):
     @login_decorator
     def get(self, request):
-        try:
             user = request.user
-            cart_products = OrderItem.objects.filter(order__user=user)
+            cart_products = OrderItem.objects.filter(order__user=user, order__order_status=OrderStatusEnum.CART.value)
+
+            if not cart_products.exists():
+                return JsonResponse({'message' : 'EMPTY CART'}, status = 404)
 
             result = [{
-                'product_id': order.product.id,
-                'title'     : order.product.title,
-                'price'     : order.order_price,
-                'quantity'  : order.order_quantity,
-                'picture'   : order.product.productimage.main_url
-            } for order in cart_products]
+                'product_id': cart_product.product_id.id,
+                'title'     : cart_product.product_id.title,
+                'price'     : cart_product.product_id.price,
+                'quantity'  : cart_product.order_quantity,
+                'picture'   : cart_product.product_id.productimage.main_url
+            } for cart_product in cart_products]
 
             return JsonResponse({'result' : result}, status = 200)
         
-        except Order.DoesNotExist:
-            return JsonResponse({'message' : "EMPTY_CART"})
-        
     @login_decorator
-    def post(self, request, count):
+    def post(self, request, product_id):
         try:
-            data = json.loads(request.body)
+            data     = json.loads(request.body)
+            user     = request.user
+            quantity = data['quantity']
 
-            user    = request.user
-            product = data['product']
+            selected_product = Product.objects.get(id=product_id)
+            cart_order       = Order.objects.filter(user=user, order_status=OrderStatusEnum.CART.value)
+            cart_products    = OrderItem.objects.filter(order__user=user, product_id=selected_product, order__order_status=OrderStatusEnum.CART.value)
 
-            selected_product = Product.objects.get(id=product)
+            with transaction.atomic():
+                if cart_order.exists():
+                    if cart_products.exists():
+                        cart_products.first().order_quantity += quantity
+                        cart_products.save()
 
-            user_cart         = Q(user=user.id) & Q(order_status=STATUS.CART.value)
-            user_cart_product = Q(product=Product.objects.get(id=product)) & Q(order__in=Order.objects.filter(user_cart))
-
-            if Order.objects.filter(user_cart).exists():
-                if OrderItem.objects.filter(user_cart_product).exists():
-                    OrderItem.objects.filter(user_cart_product).update(order_quantity=OrderItem.objects.get(user_cart_product).order_quantity + count)
-                else:
-                    OrderItem.objects.create(
+                    if not cart_products.exists():
+                        OrderItem.objects.create(
                         product        = selected_product,
-                        order          = Order.objects.get(user=user.id),
-                        order_quantity = count,
+                        order          = cart_order.first(),
+                        order_quantity = quantity,
                         order_price    = selected_product.price
                     )
 
-            else:
-                Order.objects.create(
-                    user         = User.objects.get(id=user.id),
-                    order_status = OrderStatus.objects.get(id=STATUS.CART.value)
-                )
-                OrderItem.objects.create(
-                    product        = selected_product,
-                    order          = Order.objects.get(user=user.id),
-                    order_quantity = count,
-                    order_price    = selected_product.price
-                )
-
-            items = OrderItem.objects.filter(order__user_id=user)
-
-            result = [{
-                'product_id': item.product.id,
-                'title'     : item.product.title,
-                'price'     : item.order_price,
-                'quantity'  : item.order_quantity,
-                'picture'   : item.product.productimage.main_url
-            } for item in items]
+                if not cart_order.exists():
+                    new_order = Order.objects.create(
+                        user            = user,
+                        order_status_id = OrderStatusEnum.CART.value
+                    )
+                    OrderItem.objects.create(
+                        product        = selected_product,
+                        order          = new_order,
+                        order_quantity = quantity,
+                        order_price    = selected_product.price
+                    )
    
-            return JsonResponse({'result' : result}, status = 201)
+            return JsonResponse({'result' : 'SUCCESS'}, status = 201)
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
 
     @login_decorator
-    def patch(self, request):
+    def patch(self, request, product_id):
         try:
             data = json.loads(request.body)
 
             user        = request.user
-            product     = data['product']
             calculation = data['calculation']
 
-            user_cart         = Q(user=user.id) & Q(order_status=STATUS.CART.value)
-            user_cart_product = Q(product=Product.objects.get(id=product)) & Q(order__in=Order.objects.filter(user_cart))
+            selected_product = Product.objects.get(id=product_id)
+            cart_products    = OrderItem.objects.filter(order__user=user, product_id=selected_product, order__order_status=OrderStatusEnum.CART.value)
 
             if calculation == 'addition':
-                OrderItem.objects.filter(user_cart_product).update(
-                    order_quantity=(OrderItem.objects.get(user_cart_product).order_quantity + 1)
-                )
+                cart_products.update(order_quantity=cart_products.first().order_quantity + 1)
             elif calculation == 'subtraction':
-                OrderItem.objects.filter(user_cart_product).update(
-                    order_quantity=(OrderItem.objects.get(user_cart_product).order_quantity - 1)
-                )
-
-            # result = {'order_quantity' : OrderItem.objects.get(user_cart_product).order_quantity}
+                cart_products.update(order_quantity=cart_products.first().order_quantity - 1)
 
             return JsonResponse({'result' : 'Modified'}, status = 200)
         
         except OrderItem.DoesNotExist:
-            return JsonResponse({'message' : 'DATA_NOT_EXIST'}, status = 404)
+            return JsonResponse({'message' : 'PRODUCT_NOT_EXIST'}, status = 404)
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
 
     @login_decorator
-    def delete(self, request):
+    def delete(self, request, product_id):
         try:
-            data = json.loads(request.body)
+            user        = request.user     
 
-            user        = request.user
-            product     = data['product']
+            cart_product = OrderItem.objects.filter(order__user=user, product_id=product_id, order__order_status=OrderStatusEnum.CART.value)
+            cart_product.delete()
 
-            user_cart         = Q(user=user.id) & Q(order_status=STATUS.CART.value)
-            user_cart_product = Q(product=Product.objects.get(id=product)) & Q(order__in=Order.objects.filter(user_cart))            
-
-            OrderItem.objects.get(user_cart_product).delete()
-
-            if OrderItem.objects.filter(order__in=Order.objects.filter(user_cart)).exists():
-                pass
-            else:
-                Order.objects.get(user_cart).delete()
+            if not cart_product.exists():
+                Order.objects.get(user=user, order_status=OrderStatusEnum.CART.value).delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
@@ -149,16 +125,16 @@ class OrderView(View):
     @login_decorator
     def patch(self, request):
         try:
-            data = json.loads(request.body)
+            data        = json.loads(request.body)
+            user        = request.user
+            price_total = data['price_total']
 
-            user               = request.user
-            price_total        = data['price_total']
+            user_cart = Order.objects.filter(user=user, order_status=OrderStatusEnum.CART.value)
 
-            user_cart = Q(user=user.id) & Q(order_status=STATUS.CART.value)
-
-            User.objects.filter(id=user.id).update(point=User.objects.get(id=user.id).point - price_total)
-            Order.objects.filter(user_cart).update(order_number=uuid.uuid4())
-            Order.objects.filter(user_cart).update(order_status=STATUS.DELIVERY_COMPLETED.value)
+            with transaction.atomic():
+                User.objects.filter(id=user.id).update(point=User.objects.get(id=user.id).point - price_total)
+                user_cart.update(order_number=uuid.uuid4())
+                user_cart.update(order_status=OrderStatusEnum.DELIVERY_COMPLETED.value)
 
             return JsonResponse({'message' : 'ORDER_COMPLETED'}, status = 200)
 

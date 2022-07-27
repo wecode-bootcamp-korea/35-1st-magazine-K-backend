@@ -30,11 +30,11 @@ class CartView(View):
                 return JsonResponse({'message' : 'EMPTY CART'}, status = 404)
 
             result = [{
-                'product_id': cart_product.product_id.id,
-                'title'     : cart_product.product_id.title,
-                'price'     : cart_product.product_id.price,
+                'product_id': cart_product.product.id,
+                'title'     : cart_product.product.title,
+                'price'     : cart_product.product.price,
                 'quantity'  : cart_product.order_quantity,
-                'picture'   : cart_product.product_id.productimage.main_url
+                'picture'   : cart_product.product.productimage.main_url
             } for cart_product in cart_products]
 
             return JsonResponse({'result' : result}, status = 200)
@@ -59,7 +59,7 @@ class CartView(View):
                     OrderItem.objects.create(
                         product        = selected_product,
                         order          = new_order,
-                        order_quantity = quantity,
+                        order_quantity = 0,
                         order_price    = selected_product.price
                     )
 
@@ -67,10 +67,10 @@ class CartView(View):
                     OrderItem.objects.create(
                     product        = selected_product,
                     order          = cart_order.first(),
-                    order_quantity = quantity,
+                    order_quantity = 0,
                     order_price    = selected_product.price
                 )
-                        
+
                 cart_product = cart_products.first()
                 cart_product.order_quantity += quantity
                 cart_product.save()
@@ -107,11 +107,11 @@ class CartView(View):
     def delete(self, request, product_id):
         try:
             user         = request.user
-            cart_product = OrderItem.objects.filter(order__user=user, product_id=product_id, order__order_status=OrderStatusEnum.CART.value)
+            cart_product = OrderItem.objects.get(order__user=user, product_id=product_id, order__order_status=OrderStatusEnum.CART.value)
 
             cart_product.delete()
 
-            if not cart_product.exists():
+            if not Order.objects.get(user=user, order_status=OrderStatusEnum.CART.value).orderitem_set.exists():
                 Order.objects.get(user=user, order_status=OrderStatusEnum.CART.value).delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -128,11 +128,14 @@ class OrderView(View):
             price_total = data['price_total']
 
             user_cart = Order.objects.filter(user=user, order_status=OrderStatusEnum.CART.value)
-
+            
             with transaction.atomic():
+                if not user_cart.exists():
+                    return JsonResponse({'message' : 'PRODUCT_NOT_EXIST'}, status = 404)
+
                 User.objects.filter(id=user.id).update(point=User.objects.get(id=user.id).point - price_total)
                 user_cart.update(order_number=uuid.uuid4())
-                user_cart.update(order_status=OrderStatusEnum.DELIVERY_COMPLETED.value)
+                user_cart.update(order_status_id=OrderStatusEnum.DELIVERY_COMPLETED.value)
 
             return JsonResponse({'message' : 'ORDER_COMPLETED'}, status = 200)
 

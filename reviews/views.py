@@ -1,5 +1,7 @@
 import json
 
+from enum                       import Enum
+
 from django.views               import View
 from django.http                import JsonResponse
 
@@ -9,6 +11,15 @@ from reviews.models             import Review
 from products.models            import Product  
 from orders.models              import Order, OrderStatus, OrderItem
 
+class OrderStatusEnum:
+    CART                   = 1
+    BEFORE_DEPOSIT         = 2
+    PREPARING_FOR_DELIVERY = 3
+    SHIPPING               = 4
+    DELIVERY_COMPLETED     = 5
+    EXCHANGE               = 6
+    RETURN                 = 7
+
 class ReviewView(View):
     @login_decorator
     def post(self, request, product_id):
@@ -17,15 +28,14 @@ class ReviewView(View):
             user            = request.user
             content         = data['content']
             rating          = data['rating']
-            
-            delivered       = OrderStatus.objects.get(id=5)
-            orderd_products = OrderItem.objects.filter(order__user=user, order__order_status=delivered, product_id=product_id)
+
+            orderd_products = OrderItem.objects.filter(order__user=user, order__order_status=OrderStatusEnum.DELIVERY_COMPLETED.value, product_id=product_id)
             
             if not orderd_products.exists():
                 return JsonResponse({'MESSAGE':'INVALID_REQUEST'}, status=401)
 
             Review.objects.create(
-                user_id    = user.id,
+                user       = user,
                 content    = content,
                 rating     = rating,
                 product_id = product_id,

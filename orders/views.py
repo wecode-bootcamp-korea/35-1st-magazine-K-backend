@@ -115,9 +115,9 @@ class CartView(View):
                     order_quantity=(OrderItem.objects.get(user_cart_product).order_quantity - 1)
                 )
 
-            result = {'order_quantity' : OrderItem.objects.get(user_cart_product).order_quantity}
+            # result = {'order_quantity' : OrderItem.objects.get(user_cart_product).order_quantity}
 
-            return JsonResponse({'result' : result}, status = 200)
+            return JsonResponse({'result' : 'Modified'}, status = 200)
         
         except OrderItem.DoesNotExist:
             return JsonResponse({'message' : 'DATA_NOT_EXIST'}, status = 404)
@@ -147,3 +147,23 @@ class CartView(View):
 
         except OrderItem.DoesNotExist:
             return JsonResponse({'message' : 'PRODUCT_NOT_EXIST'}, status = 404)
+
+class OrderView(View):
+    @login_decorator
+    def patch(self, request):
+        try:
+            data = json.loads(request.body)
+
+            user               = request.user
+            price_total        = data['price_total']
+
+            user_cart = Q(user=user.id) & Q(order_status=STATUS.CART.value)
+
+            User.objects.filter(id=user.id).update(point=User.objects.get(id=user.id).point - price_total)
+            Order.objects.filter(user_cart).update(order_number=uuid.uuid4())
+            Order.objects.filter(user_cart).update(order_status=STATUS.DELIVERY_COMPLETED.value)
+
+            return JsonResponse({'message' : 'ORDER_COMPLETED'}, status = 200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)

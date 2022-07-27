@@ -51,19 +51,6 @@ class CartView(View):
             cart_products    = OrderItem.objects.filter(order__user=user, product_id=selected_product, order__order_status=OrderStatusEnum.CART.value)
 
             with transaction.atomic():
-                if cart_order.exists():
-                    if cart_products.exists():
-                        cart_products.first().order_quantity += quantity
-                        cart_products.save()
-
-                    if not cart_products.exists():
-                        OrderItem.objects.create(
-                        product        = selected_product,
-                        order          = cart_order.first(),
-                        order_quantity = quantity,
-                        order_price    = selected_product.price
-                    )
-
                 if not cart_order.exists():
                     new_order = Order.objects.create(
                         user            = user,
@@ -75,7 +62,19 @@ class CartView(View):
                         order_quantity = quantity,
                         order_price    = selected_product.price
                     )
-   
+
+                if not cart_products.exists():
+                    OrderItem.objects.create(
+                    product        = selected_product,
+                    order          = cart_order.first(),
+                    order_quantity = quantity,
+                    order_price    = selected_product.price
+                )
+                        
+                cart_product = cart_products.first()
+                cart_product.order_quantity += quantity
+                cart_product.save()
+                
             return JsonResponse({'result' : 'SUCCESS'}, status = 201)
 
         except KeyError:

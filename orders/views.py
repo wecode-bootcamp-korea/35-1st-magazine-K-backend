@@ -23,7 +23,7 @@ class OrderStatusEnum(Enum):
 class CartView(View):
     @login_decorator
     def get(self, request):
-            user = request.user
+            user          = request.user
             cart_products = OrderItem.objects.filter(order__user=user, order__order_status=OrderStatusEnum.CART.value)
 
             if not cart_products.exists():
@@ -84,8 +84,7 @@ class CartView(View):
     @login_decorator
     def patch(self, request, product_id):
         try:
-            data = json.loads(request.body)
-
+            data        = json.loads(request.body)
             user        = request.user
             calculation = data['calculation']
 
@@ -108,9 +107,9 @@ class CartView(View):
     @login_decorator
     def delete(self, request, product_id):
         try:
-            user        = request.user     
-
+            user         = request.user
             cart_product = OrderItem.objects.filter(order__user=user, product_id=product_id, order__order_status=OrderStatusEnum.CART.value)
+
             cart_product.delete()
 
             if not cart_product.exists():

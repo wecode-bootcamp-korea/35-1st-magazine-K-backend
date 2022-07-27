@@ -4,10 +4,11 @@ from django.views               import View
 from django.http                import JsonResponse
 
 from core.utils.login_decorator import login_decorator
-from comments.models            import Comment
+
+from reviews.models             import Review
 from products.models            import Product
 
-class CommentView(View):
+class ReviewView(View):
     @login_decorator
     def post(self, request, product_id):
         try:
@@ -17,7 +18,7 @@ class CommentView(View):
             rating  = data['rating']
             product = Product.objects.get(id=product_id)
 
-            Comment.objects.create(
+            Review.objects.create(
                 user_id    = user.id,
                 content    = content,
                 rating     = rating,

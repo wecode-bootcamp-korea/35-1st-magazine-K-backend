@@ -11,7 +11,7 @@ from orders.models              import Order, OrderItem, OrderStatus
 from products.models            import Product
 from users.models               import User
 
-class STATUS(Enum):
+class OrderStatusEnum(Enum):
     CART                   = 1
     BEFORE_DEPOSIT         = 2
     PREPARING_FOR_DELIVERY = 3
@@ -25,10 +25,7 @@ class CartView(View):
     def get(self, request):
         try:
             user = request.user
-
-            user_cart = Q(user=user.id) & Q(order_status=STATUS.CART.value)
-
-            cart_products = Order.objects.get(user_cart).orderitem_set.all()
+            cart_products = OrderItem.objects.filter(order__user=user)
 
             result = [{
                 'product_id': order.product.id,

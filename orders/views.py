@@ -88,14 +88,18 @@ class CartView(View):
             calculation = data['calculation']
 
             selected_product = Product.objects.get(id=product_id)
-            cart_products    = OrderItem.objects.filter(order__user=user, product_id=selected_product, order__order_status=OrderStatusEnum.CART.value)
+            cart_product     = OrderItem.objects.filter(order__user=user, product_id=selected_product, order__order_status=OrderStatusEnum.CART.value)
 
             if calculation == 'addition':
-                cart_products.update(order_quantity=cart_products.first().order_quantity + 1)
-            elif calculation == 'subtraction':
-                cart_products.update(order_quantity=cart_products.first().order_quantity - 1)
+                cart_product.update(order_quantity=cart_product.first().order_quantity + 1)
 
-            return JsonResponse({'result' : 'Modified'}, status = 200)
+            if calculation == 'subtraction':
+                if cart_product.first().order_quantity == 1:
+                    return JsonResponse({'message' : "CAN'T_SUBTRACTION"}, status = 400)
+                else:
+                    cart_product.update(order_quantity=cart_product.first().order_quantity - 1)
+
+            return JsonResponse({'result' : 'SUCCESS'}, status = 200)
         
         except OrderItem.DoesNotExist:
             return JsonResponse({'message' : 'PRODUCT_NOT_EXIST'}, status = 404)
@@ -107,15 +111,19 @@ class CartView(View):
     def delete(self, request, product_id):
         try:
             user         = request.user
-            cart_product = OrderItem.objects.get(order__user=user, product_id=product_id, order__order_status=OrderStatusEnum.CART.value)
+            cart_product = OrderItem.objects.get(order__user=user, product_id=product_id, order__order_status_id=OrderStatusEnum.CART.value)
 
             cart_product.delete()
 
-            if not Order.objects.get(user=user, order_status=OrderStatusEnum.CART.value).orderitem_set.exists():
-                Order.objects.get(user=user, order_status=OrderStatusEnum.CART.value).delete()
+            if not Order.objects.get(user=user, order_status_id=OrderStatusEnum.CART.value).orderitem_set.exists():
+                Order.objects.get(user=user, order_status_id=OrderStatusEnum.CART.value).delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
+        except Order.DoesNotExist:
+            return JsonResponse({'message' : 'ORDER_NOT_EXIST'}, status = 404)
+        except Order.MultipleObjectsReturned:
+            return JsonResponse({'message' : 'DATA_INTEGRITY_ERROR'}, status = 400)
         except OrderItem.DoesNotExist:
             return JsonResponse({'message' : 'PRODUCT_NOT_EXIST'}, status = 404)
 

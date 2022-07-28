@@ -39,7 +39,7 @@ class ReviewView(View):
                 rating     = rating,
                 product_id = product_id,
             )
-            return JsonResponse({'MESSAGE':'SUCCESE'}, status=200)
+            return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
 

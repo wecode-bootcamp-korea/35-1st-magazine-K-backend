@@ -30,7 +30,7 @@ class CartView(View):
                 return JsonResponse({'message' : 'EMPTY CART'}, status = 404)
 
             result = [{
-                'user_point' : User.objects.get(id=user.id).point,
+                'user_point' : user.point,
                 'product' : [{
                     'product_id': cart_product.product.id,
                     'title'     : cart_product.product.title,

@@ -6,8 +6,20 @@ from django.http                import JsonResponse
 from core.utils.login_decorator import login_decorator
 
 from reviews.models             import Review
+from products.models            import Product
 
 class ReviewView(View):
+    def get(self, request, product_id):
+        reviews = Review.objects.filter(product_id=product_id)
+    
+        results = [{
+                    'review'  : review.id,
+                    'username': review.user.username,
+                    'content' : review.content,
+                    'rating'  : review.rating,
+                    }for review in reviews]
+        return JsonResponse({'RESULTS':results}, status=200)      
+        
     @login_decorator   
     def delete(self, request, product_id, review_id):
         try:
@@ -19,4 +31,3 @@ class ReviewView(View):
 
         except Review.DoesNotExist:
             return JsonResponse({'MESSAGE':'INVALID_REVIEW'}, status=401)
-                          

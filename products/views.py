@@ -11,14 +11,26 @@ class ProductView(View):
             category = int(request.GET.get('category', 1))
             offset   = int(request.GET.get('offset', 0))
             limit    = int(request.GET.get('limit', 0))
-            sort_by  = request.GET.get('sort_by', '-issue_number')
+            sort_by  = request.GET.get('sort_by', 'latest_issue')
 
-            products = Product.objects.filter(Q(main_category=category) | Q(sub_category=category))
+            sort_options = {
+                'latest_issue' : '-issue_number',
+                'oldest_issue' : 'issue_number',
+                'high_price'   : '-price',
+                'low_price'    : 'price',
+            }
 
-            sorted_products = products.order_by(sort_by)
+            filter_options = Q()
 
-            result = [
-                {
+            if category:
+                filter_options |= Q(main_category=category)
+                filter_options |= Q(sub_category=category)
+
+            products = Product.objects.filter(filter_options).order_by(sort_options[sort_by])
+
+            result = [{
+                'total_count' : products.count(),
+                'products' : [{
                     'product_id'    : product.id,
                     'title'         : product.title,
                     'issue_number'  : product.issue_number,
@@ -26,14 +38,8 @@ class ProductView(View):
                     'price'         : product.price,
                     'main_img_url_1': product.productimage.main_url,
                     'main_img_url_2': product.productimage.sub_url,
-                }
-                for product in sorted_products[offset:offset+limit]]
-
-            result.append(
-                {
-                    'category_total' : len(products)
-                }
-            )
+                }for product in products[offset:offset+limit]]
+            }]
 
             return JsonResponse({'result' : result}, status = 200)
 

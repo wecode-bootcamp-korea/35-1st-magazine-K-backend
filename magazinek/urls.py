@@ -5,4 +5,3 @@ urlpatterns = [
     path('member', include('users.urls')),
     path('products', include('reviews.urls')),
 ]
-

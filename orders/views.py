@@ -60,7 +60,6 @@ class CartView(View):
                         product        = selected_product,
                         order          = new_order,
                         order_quantity = 0,
-                        order_price    = selected_product.price
                     )
 
                 if not cart_products.exists():
@@ -68,7 +67,6 @@ class CartView(View):
                     product        = selected_product,
                     order          = cart_order.first(),
                     order_quantity = 0,
-                    order_price    = selected_product.price
                 )
 
                 cart_product = cart_products.first()

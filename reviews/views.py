@@ -15,8 +15,8 @@ class ReviewView(View):
             review = Review.objects.get(id=review_id, user=user, product=product_id)
 
             review.delete()
-            return JsonResponse({'MESSAGE':'SUCCESE'}, status=200)
+            return JsonResponse({'MESSAGE':'SUCCESS'}, status=204)
 
         except Review.DoesNotExist:
-            return JsonResponse({'MESSAGE':'INVALID_REVIEW'}, status=400)
+            return JsonResponse({'MESSAGE':'INVALID_REVIEW'}, status=401)
                           

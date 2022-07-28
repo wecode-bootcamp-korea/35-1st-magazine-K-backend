@@ -30,12 +30,15 @@ class CartView(View):
                 return JsonResponse({'message' : 'EMPTY CART'}, status = 404)
 
             result = [{
-                'product_id': cart_product.product.id,
-                'title'     : cart_product.product.title,
-                'price'     : cart_product.product.price,
-                'quantity'  : cart_product.order_quantity,
-                'picture'   : cart_product.product.productimage.main_url
+                'user_point' : user.point,
+                'product' : [{
+                    'product_id': cart_product.product.id,
+                    'title'     : cart_product.product.title,
+                    'price'     : cart_product.product.price,
+                    'quantity'  : cart_product.order_quantity,
+                    'picture'   : cart_product.product.productimage.main_url
             } for cart_product in cart_products]
+            }]
 
             return JsonResponse({'result' : result}, status = 200)
         

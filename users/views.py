@@ -15,11 +15,12 @@ class JoinView(View):
         try: 
             data = json.loads(request.body)
 
-            username     = data['username']
-            password     = data['password']
-            name         = data['name']
-            phone_number = data['phone_number']
-            email        = data['email']
+            username      = data['username']
+            password      = data['password']
+            name          = data['name']
+            phone_number  = data['phone_number']
+            email         = data['email']
+            DEFAULT_POINT = 100000
 
             validate_username(username)
             validate_email(email)
@@ -36,6 +37,7 @@ class JoinView(View):
                 name         = name,
                 phone_number = phone_number,
                 email        = email,
+                point        = DEFAULT_POINT,
             )
             return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
         

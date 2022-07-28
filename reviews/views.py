@@ -29,9 +29,9 @@ class ReviewView(View):
             content         = data['content']
             rating          = data['rating']
 
-            orderd_products = OrderItem.objects.filter(order__user=user, order__order_status=OrderStatusEnum.DELIVERY_COMPLETED.value, product_id=product_id)
+            ordered_products = OrderItem.objects.filter(order__user=user, order__order_status=OrderStatusEnum.DELIVERY_COMPLETED.value, product_id=product_id)
             
-            if not orderd_products.exists():
+            if not ordered_products.exists():
                 return JsonResponse({'MESSAGE':'INVALID_REQUEST'}, status=401)
 
             Review.objects.create(
@@ -40,6 +40,6 @@ class ReviewView(View):
                 rating     = rating,
                 product_id = product_id,
             )
-            return JsonResponse({'MESSAGE':'SUCCESE'}, status=200)
+            return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)

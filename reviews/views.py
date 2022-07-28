@@ -43,3 +43,14 @@ class ReviewView(View):
             return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+
+    def get(self, request, product_id):
+        reviews = Review.objects.filter(product_id=product_id)
+    
+        results = [{
+                    'review'  : review.id,
+                    'username': review.user.username,
+                    'content' : review.content,
+                    'rating'  : review.rating,
+                    }for review in reviews]
+        return JsonResponse({'RESULTS':results}, status=200)      

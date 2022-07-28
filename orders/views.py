@@ -42,9 +42,10 @@ class CartView(View):
     @login_decorator
     def post(self, request, product_id):
         try:
-            data     = json.loads(request.body)
-            user     = request.user
-            quantity = data['quantity']
+            data          = json.loads(request.body)
+            user          = request.user
+            quantity      = data['quantity']
+            DEFAULT_VALUE = 0
 
             selected_product = Product.objects.get(id=product_id)
             cart_order       = Order.objects.filter(user=user, order_status=OrderStatusEnum.CART.value)
@@ -59,14 +60,14 @@ class CartView(View):
                     OrderItem.objects.create(
                         product        = selected_product,
                         order          = new_order,
-                        order_quantity = 0,
+                        order_quantity = DEFAULT_VALUE,
                     )
 
                 if not cart_products.exists():
                     OrderItem.objects.create(
                     product        = selected_product,
                     order          = cart_order.first(),
-                    order_quantity = 0,
+                    order_quantity = DEFAULT_VALUE,
                 )
 
                 cart_product = cart_products.first()

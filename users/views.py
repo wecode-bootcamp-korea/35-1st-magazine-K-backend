@@ -1,8 +1,7 @@
 import json
-import re
-
 import bcrypt
 import jwt
+
 from django.core.exceptions import ValidationError
 from django.conf            import settings
 from django.views           import View
@@ -12,8 +11,7 @@ from users.models           import User
 from core.utils.validatior  import validate_username, validate_email, validate_password
 
 class JoinView(View):
-
-    def post(self, request): 
+    def post(self, request):
         try: 
             data = json.loads(request.body)
 

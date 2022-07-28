@@ -12,6 +12,7 @@ class ProductView(View):
             offset   = int(request.GET.get('offset', 0))
             limit    = int(request.GET.get('limit', 0))
             sort_by  = request.GET.get('sort_by', 'latest_issue')
+            keyword  = request.GET.get('keyword', None).upper()
 
             sort_options = {
                 'latest_issue' : '-issue_number',
@@ -25,6 +26,9 @@ class ProductView(View):
             if category:
                 filter_options |= Q(main_category=category)
                 filter_options |= Q(sub_category=category)
+
+            if keyword:
+                filter_options &= Q(title__icontains=keyword)
 
             products = Product.objects.filter(filter_options).order_by(sort_options[sort_by])
 
@@ -71,24 +75,3 @@ class ProductDetailView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
-
-class SearchView(View):
-    def get(self, request, keyword):
-        keyword = self.request.GET.get('keyword')
-        print(keyword)
-        requirements = Q()
-
-        if keyword:
-            requirements |= Q(title__icontains=keyword)
-
-        searched_products = Product.objects.filter(requirements)
-
-        result = [{
-            'product_id'   : searched_product.id,
-            'title'        : searched_product.title,
-            'issue_number' : searched_product.issue_number,
-            'main_category': searched_product.main_category.name,
-            'price'        : searched_product.price
-        }for searched_product in searched_products]
-
-        return JsonResponse({'result' : result}, status = 200)

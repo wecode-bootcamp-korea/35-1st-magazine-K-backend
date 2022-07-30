@@ -12,7 +12,7 @@ class ProductView(View):
             offset   = int(request.GET.get('offset', 0))
             limit    = int(request.GET.get('limit', 0))
             sort_by  = request.GET.get('sort_by', 'latest_issue')
-            keyword  = request.GET.get('keyword', None).upper()
+            keyword  = request.GET.get('keyword', '').upper()
 
             sort_options = {
                 'latest_issue' : '-issue_number',

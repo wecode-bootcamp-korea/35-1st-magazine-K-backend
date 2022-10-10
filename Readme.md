@@ -21,6 +21,7 @@
 ### 담당 구현 사항
 ---
 * 상품 필터 및 검색 구현
+
 ```python
 category = int(request.GET.get('category', 1))
 keyword  = request.GET.get('keyword', '').upper()
@@ -32,8 +33,11 @@ if category:
 if keyword:
     filter_options &= Q(title__icontains=keyword)
 ```
+
 상품리스트 조회 시 쿼리 매개변수를 받아 Django Q Object를 이용하여 카테고리별 조회와 상품 검색요청에 응답할 수 있도록 구현하였습니다.
+
 * 상품 정렬 구현
+
 ```python
 sort_by  = request.GET.get('sort_by', 'latest_issue')
 
@@ -44,8 +48,11 @@ sort_options = {
     'low_price'    : 'price',
 }
 ```
+
 기본적으로 상품을 최신순으로 정렬하되 클라이언트의 요구에 따라 쿼리 매개변수를 받아 발행일 순 혹은 가격 순으로 정렬할 수 있도록 하였습니다.
+
 * 상품 페이지 네이션 구현
+
 ```python
 offset   = int(request.GET.get('offset', 0))
 limit    = int(request.GET.get('limit', 0))
@@ -63,6 +70,7 @@ result = [{
     }for product in products[offset:offset+limit]]
 }]
 ```
+
 최종적으로 상품에 대한 정보를 응답해 줄 때 한 페이지에 표시되는 상품의 개수를 클라이언트가 원하는 개수에 offset, limite 개념을 활용하여 응답할 수 있도록 구현하였습니다.
 
 * 장바구니 및 상품 주문 기능 구현 (트랜잭션 적용)

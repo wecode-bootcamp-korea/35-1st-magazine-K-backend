@@ -5,7 +5,7 @@
 * 개발인원: Frontend 3, Backend 2 (Backend 담당)
 * 기술스택: Python, Django, MySQL, Miniconda
 
-여러가지 콘텐츠를 바탕으로한 잡지 커머스 사이트를 구현해보았습니다. 짧게 정해진 프로젝트 기한에 맞추기 위해 기존의 커머스 사이트 Magazine b(https://magazine-b.co.kr/)사이트의 기획을 클론하였습니다. 짧은 기간안에 결과물을 만들기 위해 웹 서비스 작성시 대부분의 기반이 이미 만들어져있는 장고 프레임워크를 사용하였습니다. 
+여러가지 콘텐츠를 바탕으로한 잡지 커머스 사이트를 구현해보았습니다. 짧게 정해진 프로젝트 기한에 맞추기 위해 기존의 커머스 사이트 Magazine b(https://magazine-b.co.kr/) 사이트의 기획을 클론하였습니다. 짧은 기간안에 결과물을 만들기 위해 웹 서비스 작성시 대부분의 기반이 이미 만들어져있는 장고 프레임워크를 사용하였습니다. 
 
 ## 구현
 
@@ -18,89 +18,37 @@
 ---
 ![diagram](./image/schema.png)
 
-### 담당 구현 사항
+### 프로젝트 구현 상세 (Backend)
 ---
-* 상품 필터 및 검색 구현
+* 로그인 및 회원가입
 
-```python
-category = int(request.GET.get('category', 1))
-keyword  = request.GET.get('keyword', '').upper()
+    최초 로그인 후 JWT를 이용하여 토큰 기반 인증 방식을 채택하였습니다.
 
-if category:
-    filter_options |= Q(main_category=category)
-    filter_options |= Q(sub_category=category)
+    로그인한 클라이언트의 정보를 JWT payload에 담아 전달하고 클라이언트가 다른 작업에 대한 요청을 할 때 토큰을 전달합니다.
 
-if keyword:
-    filter_options &= Q(title__icontains=keyword)
-```
+    이번 프로젝트에서 비회원의 장바구니 사용 및 주문은 불가능하여 인증, 인가 과정이 필요한 로직에 대하여 로그인 데코레이터를 구현하여 토큰의 유저 정보를 확인하고 기능들을 사용할 수 잇도록 구현하였습니다.
 
-상품리스트 조회 시 쿼리 매개변수를 받아 Django Q Object를 이용하여 카테고리별 조회와 상품 검색요청에 응답할 수 있도록 구현하였습니다.
+* 상품 리스트 페이지 및 상세 페이지
 
-* 상품 정렬 구현
+    상품 상세페이지에 진입할 시 상품의 전체 리스트를 불러옵니다. 클라이언트 측에서 카테고리를 선택하면 해당 카테고리에 대한 상품이 필터링 되어 데이터가 전달됩니다.
 
-```python
-sort_by  = request.GET.get('sort_by', 'latest_issue')
+    상품을 요청에 따라 가격순 또는 최신순으로 정렬하여 데이터를 전달할 수 있습니다. 그리고 상품 리스트의 한 페이지에서 보고 싶은 상품 개수를 요청할 경우 페이지 당 상품의 개수를 pagenation하여 전달합니다.
 
-sort_options = {
-    'latest_issue' : '-issue_number',
-    'oldest_issue' : 'issue_number',
-    'high_price'   : '-price',
-    'low_price'    : 'price',
-}
-```
+    상품 상세 페이지에서는 하나의 상품에 대해 더 자세한 정보를 제공합니다.
 
-기본적으로 상품을 최신순으로 정렬하되 클라이언트의 요구에 따라 쿼리 매개변수를 받아 발행일 순 혹은 가격 순으로 정렬할 수 있도록 하였습니다.
+* 상품 검색 기능
 
-* 상품 페이지 네이션 구현
+    상품 검색의 경우 상품 리스트 페이지 로직을 재활용하였습니다. 검색 키워드에 대한 필터 옵션을 추가하여 상품 이름을 기준으로 키워드가 포함된 상품 데이터를 응답하도록 구현하였습니다.
 
-```python
-offset   = int(request.GET.get('offset', 0))
-limit    = int(request.GET.get('limit', 0))
+* 장바구니 및 상품 주문 기능 구현
 
-result = [{
-    'total_count' : products.count(),
-    'products' : [{
-        'product_id'    : product.id,
-        'title'         : product.title,
-        'issue_number'  : product.issue_number,
-        'main_category' : product.main_category.name,
-        'price'         : product.price,
-        'main_img_url_1': product.productimage.main_url,
-        'main_img_url_2': product.productimage.sub_url,
-    }for product in products[offset:offset+limit]]
-}]
-```
+    상품 주문에 대한 CRUD를 구현하였습니다.
 
-최종적으로 상품에 대한 정보를 응답해 줄 때 한 페이지에 표시되는 상품의 개수를 클라이언트가 원하는 개수에 offset, limite 개념을 활용하여 응답할 수 있도록 구현하였습니다.
+    클라이언트가 상품을 장바구니에 넣으면 주문 테이블과 주문 상품 테이블에 정보가 업테이트 됩니다. 기획상 장바구니 테이블을 따로 두지 않고, 주문 상태 테이블에 장바구니를 하나의 상태로 하여 참조하도록 구현하였습니다.
 
-* 장바구니 및 상품 주문 기능 구현 (트랜잭션 적용)
+    상품 주문 결재는 포인트를 소모하여 주문하는 방식으로 구현하였습니다. 배송 상테의 테이블에 다양한 상태가 존재하지만 해당 기능들은 구현하지 못하여 주문과 동시에 배송완료 상태가 되도록 하였습니다.
 
-```python
-with transaction.atomic():
-    if not cart_order.exists():
-        new_order = Order.objects.create(
-            user            = user,
-            order_status_id = OrderStatusEnum.CART.value
-        )
-        OrderItem.objects.create(
-            product        = selected_product,
-            order          = new_order,
-            order_quantity = DEFAULT_VALUE,
-        )
-
-    if not cart_products.exists():
-        OrderItem.objects.create(
-        product        = selected_product,
-        order          = cart_order.first(),
-        order_quantity = DEFAULT_VALUE,
-    )
-```
-
-이번 프로젝트의 기획상 장바구니에 대한 모델이 별도로 존재하지 않고 주문 모델에서 주문 상태를 통해 장바구니와 주문을 구별하도록 하였습니다. 그래서 장바구니에 담는 즉시 주문과 주문 상품 모델에 데이터가 함께 업데이트 되는데, 작업 도중 에러로 인해 주문만 생성되고 주문 상품이 생성되지 않는 상황을 막기 위해 트랜젝션을 적용시켜 일련의 과정이 성공적으로 커밋되지 않으면 롤백되도록 구현하였습니다.
-
-이외의 상품 조회, 삭제는 ORM을 통해 데이터를 조작하도록 구현하였습니다.
-
-## API
+## API 설계
 
 * User
 

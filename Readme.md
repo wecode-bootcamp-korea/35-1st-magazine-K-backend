@@ -3,7 +3,7 @@
 * 프로젝트명: Magazine k
 * 개발기간: 2022.07.18-2022.07.29
 * 개발인원: Frontend 3, Backend 2 (Backend 담당)
-* 기술스택: Python, Django, MySQL, Miniconda
+* 기술스택: Python, Django, MySQL
 
 여러가지 콘텐츠를 바탕으로한 잡지 커머스 사이트를 구현해보았습니다. 짧게 정해진 프로젝트 기한에 맞추기 위해 기존의 커머스 사이트 Magazine b(https://magazine-b.co.kr/) 사이트의 기획을 클론하였습니다. 짧은 기간안에 결과물을 만들기 위해 웹 서비스 작성시 대부분의 기반이 이미 만들어져있는 장고 프레임워크를 사용하였습니다. 
 

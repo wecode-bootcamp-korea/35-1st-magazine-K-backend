@@ -32,7 +32,7 @@ class ProductView(View):
             if keyword:
                 filter_options &= Q(title__icontains=keyword)
 
-            products = Product.objects.filter(filter_options).order_by(sort_options[sort_by])
+            products = Product.objects.filter(filter_options).order_by(sort_options[sort_by]).select_related('productimage')
 
             result = [{
                 'total_count' : products.count(),

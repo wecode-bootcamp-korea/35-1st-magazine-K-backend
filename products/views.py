@@ -1,9 +1,11 @@
+import json
+
 from django.views           import View
 from django.http            import JsonResponse
 from django.db.models       import Q
 from django.core.exceptions import FieldError
 
-from products.models import Product
+from products.models import Category, Product, ProductImage
 
 class ProductView(View):
     def get(self, request):
@@ -75,3 +77,29 @@ class ProductDetailView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+
+class ProductManageView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+
+        Product.objects.create(
+            title = "더미 데이터",
+            price = 20000,
+            language = "KOREAN",
+            size = "170 x 240 mm",
+            pages = 200,
+            published_date = "20xx. xx. xx.",
+            isbn = "979-11-xxxxxx-x-x",
+            description = "더미 데이터",
+            issue_number = data['issue_number'],
+            product_image_url = "http://placeimg.com/640/480/any",
+            main_category = Category.objects.get(id=1),
+            sub_category = Category.objects.get(id=data['sub_category']),
+        )
+        ProductImage.objects.create(
+            product = Product.objects.get(id=data['product_id']),
+            main_url = "http://placeimg.com/640/480/any",
+            sub_url  = "http://placeimg.com/640/480/any",
+        )
+
+        return JsonResponse({'message' : 'success'}, status = 202)

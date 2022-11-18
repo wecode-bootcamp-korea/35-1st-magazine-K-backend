@@ -3,6 +3,13 @@ from django.db import models
 from core.models import BaseModel
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=20)
+
+    class Meta:
+        db_table = "categories"
+
+
 class Product(BaseModel):
     title = models.CharField(max_length=30)
     price = models.DecimalField(max_digits=10, decimal_places=2)

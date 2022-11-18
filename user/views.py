@@ -24,3 +24,10 @@ def signin(request):
     serializer.is_valid()
     token = auth_provider.signin(**serializer.data)
     return JsonResponse({"access_token": token, "status": status.HTTP_200_OK})
+
+
+@api_view(["POST"])
+def signout(request):
+    token = auth_provider.get_token_from_request(request=request)
+    expired_token = auth_provider.signout(token=token)
+    return JsonResponse({"expired_token": expired_token, "status": status.HTTP_200_OK})

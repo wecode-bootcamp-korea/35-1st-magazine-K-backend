@@ -77,7 +77,6 @@ class AuthProvider:
             name=name,
             phone_number=phone_number,
         )
-
         return True
 
     def signin(self, email: str, password: str):

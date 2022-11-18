@@ -16,7 +16,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductCreateReq(serializers.Serializer):
+class ProductReq(serializers.Serializer):
     title = serializers.CharField(max_length=30)
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     language = serializers.CharField(max_length=20)
@@ -31,7 +31,7 @@ class ProductCreateReq(serializers.Serializer):
     sub_category = serializers.IntegerField()
 
 
-class CategoryCreateReq(serializers.Serializer):
+class CategoryReq(serializers.Serializer):
     name = serializers.CharField(max_length=20)
 
 
@@ -42,6 +42,18 @@ class CategoryRepo:
     def create_category(self, name: str) -> dict:
         created = Category.objects.create(name=name)
         return CategorySerializer(created).data
+
+    def get_category_list(self) -> dict:
+        categories = Category.objects.all()
+        return CategorySerializer(categories, many=True).data
+
+    def update_category(self, category_id: int, name: str) -> bool:
+        Category.objects.filter(id=category_id).update(name=name)
+        return True
+
+    def delete_category(self, category_id: int) -> bool:
+        Category.objects.get(id=category_id).delete()
+        return True
 
 
 class ProductRepo:

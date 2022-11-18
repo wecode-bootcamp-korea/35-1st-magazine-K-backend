@@ -14,7 +14,7 @@ class OrderStatus(models.Model):
 
 class Order(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order_status = models.PositiveIntegerField()
+    order_status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
     order_number = models.UUIDField(null=True)
 
     class Meta:

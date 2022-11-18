@@ -21,8 +21,12 @@ class Product(BaseModel):
     description = models.TextField()
     issue_number = models.PositiveIntegerField()
     product_image_url = models.CharField(max_length=200)
-    main_category = models.PositiveIntegerField()
-    sub_category = models.PositiveIntegerField()
+    main_category = models.ForeignKey(
+        Category, null=True, on_delete=models.CASCADE, related_name="main_category_product"
+    )
+    sub_category = models.ForeignKey(
+        Category, null=True, on_delete=models.CASCADE, related_name="sub_category_product"
+    )
 
     class Meta:
         db_table = "product"

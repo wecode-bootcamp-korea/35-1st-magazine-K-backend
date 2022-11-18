@@ -17,9 +17,10 @@ def signup(request):
     return JsonResponse({"status": status.HTTP_201_CREATED})
 
 
+@api_view(["POST"])
 def signin(request):
     params = request.data
     serializer = SigninReq(data=params)
     serializer.is_valid()
-    token = user_repo.signin(**serializer.data)
-    return JsonResponse(token)
+    token = auth_provider.signin(**serializer.data)
+    return JsonResponse({"access_token": token, "status": status.HTTP_200_OK})

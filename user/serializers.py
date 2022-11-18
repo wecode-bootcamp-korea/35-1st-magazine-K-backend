@@ -3,6 +3,12 @@ from rest_framework import serializers
 from .models import User
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
+
+
 class SignupReq(serializers.Serializer):
     """
     회원가입 요청 값 직렬화
@@ -44,4 +50,5 @@ class UserRepo:
         return True
 
     def get_user_by_email(self, email: str) -> object:
-        return User.objects.get(email=email)
+        user = User.objects.get(email=email)
+        return UserSerializer(user).data

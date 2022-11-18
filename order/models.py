@@ -5,16 +5,9 @@ from product.models import Product
 from core.models import BaseModel
 
 
-class OrderStatus(models.Model):
-    order_status = models.CharField(max_length=50)
-
-    class Meta:
-        db_table = "order_status"
-
-
 class Order(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order_status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
+    order_status = models.PositiveIntegerField()
     order_number = models.UUIDField(null=True)
 
     class Meta:

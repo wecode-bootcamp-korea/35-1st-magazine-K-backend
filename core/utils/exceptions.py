@@ -5,9 +5,22 @@ class CustomBaseExecption(Exception):
     is_custom_execption = True
 
 
+class KeyError(CustomBaseExecption):
+    def __init__(self):
+        self.msg = "Invaild Key. Check the key"
+        self.status = status.HTTP_400_BAD_REQUEST
+
+
+class InvaildPayloadError(CustomBaseExecption):
+    def __init__(self):
+        self.msg = "Invaild Payload. Please Check Token or Signin Again"
+        self.status = status.HTTP_400_BAD_REQUEST
+
+
 class NotFoundError(CustomBaseExecption):
     def __init__(self):
         self.msg = "Data Not Found. Please Check ID"
+        self.status = status.HTTP_400_BAD_REQUEST
 
 
 class NotFoundUserError(CustomBaseExecption):

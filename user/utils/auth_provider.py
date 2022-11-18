@@ -99,7 +99,7 @@ class AuthProvider:
     def check_auth(self, token: str) -> bool:
         decoded = self._decode(token)
         try:
-            user = self.user_repo.get(decoded["id"])
+            user = self.user_repo.get_user_by_email(decoded["id"])
             if user:
                 return user
             else:

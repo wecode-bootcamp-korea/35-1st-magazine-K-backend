@@ -1,28 +1,24 @@
 import jwt
 
-from django.conf import settings
-from django.http import JsonResponse
-
 from user.models import User
+from user.utils.auth_provider import AuthProvider
+from core.utils.exceptions import NotFoundUserError, InvaildPayloadError, KeyError
+
+auth_provider = AuthProvider()
 
 
 def login_decorator(func):
     def wrapper(self, request, *args, **kwargs):
         try:
-            access_token = request.headers.get("Authorization")
-            payload = jwt.decode(access_token, settings.SECRET_KEY, settings.ALGORITHM)
-            user = User.objects.get(id=payload["id"])
+            token = auth_provider.get_token_from_request(request=request)
+            user = auth_provider.check_auth(token=token)
             request.user = user
-
             return func(self, request, *args, **kwargs)
-
         except User.DoesNotExist:
-            return JsonResponse({"MESSAGE": "INVALID_USER"}, status=401)
-
+            raise NotFoundUserError
         except jwt.exceptions.DecodeError:
-            return JsonResponse({"MESSAGE": "INVALID_PAYLOAD"}, status=401)
-
+            return InvaildPayloadError
         except KeyError:
-            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
+            raise KeyError
 
     return wrapper

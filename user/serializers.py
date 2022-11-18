@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from core.utils.exceptions import NotFoundError
 from .models import User
 
 
@@ -49,6 +50,14 @@ class UserRepo:
         )
         return True
 
+    def get_user_by_id(self, user_id: int) -> dict:
+        try:
+            return UserSerializer(User.objects.get(id=user_id)).data
+        except User.DoesNotExist:
+            raise NotFoundError
+
     def get_user_by_email(self, email: str) -> object:
-        user = User.objects.get(email=email)
-        return UserSerializer(user).data
+        try:
+            return UserSerializer(User.objects.get(email=email)).data
+        except User.DoesNotExist:
+            raise NotFoundError

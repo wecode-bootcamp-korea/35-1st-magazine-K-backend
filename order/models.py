@@ -9,7 +9,7 @@ class OrderStatus(models.Model):
     order_status = models.CharField(max_length=50)
 
     class Meta:
-        db_table = "order_statuses"
+        db_table = "order_status"
 
 
 class Order(BaseModel):

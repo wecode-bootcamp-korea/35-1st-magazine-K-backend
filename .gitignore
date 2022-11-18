@@ -174,5 +174,4 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/django
 
 # 추가 사항
-my_settings.py
-migrations
+migrations/

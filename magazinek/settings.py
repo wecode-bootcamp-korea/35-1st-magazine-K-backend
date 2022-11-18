@@ -109,3 +109,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #         },
 #     },
 # }
+
+JWT_EXPIRE_TIME = int(os.environ.get("JWT_EXPIRE_TIME"))

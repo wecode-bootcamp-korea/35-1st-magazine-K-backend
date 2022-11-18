@@ -1,78 +1,25 @@
-import json
-import bcrypt
-import jwt
-
-from django.core.exceptions import ValidationError
-from django.conf import settings
-from django.views import View
+from rest_framework.decorators import api_view
+from rest_framework import status
 from django.http import JsonResponse
 
-from user.models import User
-from core.utils.validatior import validate_username, validate_email, validate_password
+from .serializers import SignupReq, SigninReq
+from .utils.auth_provider import AuthProvider
+
+auth_provider = AuthProvider()
 
 
-class JoinView(View):
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-
-            username = data["username"]
-            password = data["password"]
-            name = data["name"]
-            phone_number = data["phone_number"]
-            email = data["email"]
-            DEFAULT_POINT = 100000
-
-            validate_username(username)
-            validate_email(email)
-            validate_password(password)
-
-            if User.objects.filter(username=username).exists():
-                return JsonResponse({"MESSAGE": "Already_Registered_User"}, status=400)
-
-            hash_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode(
-                "utf-8"
-            )
-
-            User.objects.create(
-                username=username,
-                password=hash_password,
-                name=name,
-                phone_number=phone_number,
-                email=email,
-                point=DEFAULT_POINT,
-            )
-            return JsonResponse({"MESSAGE": "SUCCESS"}, status=201)
-
-        except ValidationError as error:
-            return JsonResponse({"MESSAGE": error.message}, status=400)
-
-        except json.JSONDecodeError:
-            return JsonResponse({"MESSAGE": "JSONDecodeError"}, status=400)
-
-        except KeyError:
-            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
+@api_view(["POST"])
+def signup(request):
+    params = request.data
+    serializer = SignupReq(data=params)
+    serializer.is_valid()
+    auth_provider.signup(**serializer.data)
+    return JsonResponse({"status": status.HTTP_201_CREATED})
 
 
-class LoginView(View):
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-
-            username = data["username"]
-            password = data["password"]
-
-            user = User.objects.get(username=username)
-
-            if not bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
-                return JsonResponse({"MESSAGE": "INVALID_USER"}, status=401)
-
-            access_token = jwt.encode({"id": user.id}, settings.SECRET_KEY, settings.ALGORITHM)
-
-            return JsonResponse({"MESSAGE": "SUCCESS", "AUTHORIZATION": access_token}, status=200)
-
-        except User.DoesNotExist:
-            return JsonResponse({"MESSAGE": "INVALID_USER"}, status=401)
-
-        except KeyError:
-            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
+def signin(request):
+    params = request.data
+    serializer = SigninReq(data=params)
+    serializer.is_valid()
+    token = user_repo.signin(**serializer.data)
+    return JsonResponse(token)

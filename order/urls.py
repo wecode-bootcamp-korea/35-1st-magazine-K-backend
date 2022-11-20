@@ -4,5 +4,7 @@ from order.views import CartAPI, OrderStatusAPI
 
 urlpatterns = [
     path("cart/", CartAPI.as_view()),
+    path("cart/<int:product_id>/", CartAPI.as_view()),
+    path("cart/<int:product_id>/<str:calculation>/", CartAPI.as_view()),
     path("order/status/", OrderStatusAPI.as_view()),
 ]

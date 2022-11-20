@@ -53,12 +53,23 @@ def get_product_list(request):
 
 class ProductAPI(APIView):
     def get(self, request, product_id: int):
-        product = product_repo.get_product_by_id(product_id=product_id)
+        product = product_repo.get_product_detail(product_id=product_id)
         return JsonResponse({"res": product, "status": status.HTTP_200_OK})
 
     def post(self, request):
         params = request.data
         serializer = ProductReq(data=params)
         serializer.is_valid(raise_exception=True)
-        created = product_repo.create_product(**serializer.data)
+        product_repo.create_product_and_image(**serializer.data)
         return JsonResponse({"status": status.HTTP_201_CREATED})
+
+    def put(self, request, product_id: int):
+        params = request.data
+        serializer = ProductReq(data=params)
+        serializer.is_valid(raise_exception=True)
+        product_repo.update_product_and_image(product_id=product_id, **serializer.data)
+        return JsonResponse({"status": status.HTTP_200_OK})
+
+    def delete(self, request, product_id: int):
+        product_repo.delete_product_and_image(product_id=product_id)
+        return JsonResponse({"status": status.HTTP_200_OK})

@@ -33,7 +33,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductReq(serializers.Serializer):
     """
-    상품 등록 요청 직렬화
+    상품 등록 및 수정 요청 직렬화
     """
 
     title = serializers.CharField(max_length=30)
@@ -85,7 +85,7 @@ class ProductRepo:
     def __init__(self) -> None:
         pass
 
-    def create_product(
+    def create_product_and_image(
         self,
         title: str,
         price: int,
@@ -122,13 +122,13 @@ class ProductRepo:
                 main_url=main_url,
                 sub_url=sub_url,
             )
-        return ProductSerializer(created).data
+        return True
 
-    def get_product_by_id(self, product_id: int) -> dict:
+    def get_product_detail(self, product_id: int) -> dict:
         product = Product.objects.get(id=product_id)
         return ProductSerializer(product).data
 
-    def get_product_list_with_filter(
+    def get_product_and_image_list_with_filter(
         self,
         category: int,
         sort_by: str,
@@ -159,3 +159,47 @@ class ProductRepo:
         )
 
         return ProductListSerializer(product_list, many=True).data
+
+    # TODO 상품 id가 존재하지 않는 것에 대한 요청 유효성 검증 필요
+    def update_product_and_image(
+        self,
+        product_id: int,
+        title: str,
+        price: int,
+        language: str,
+        size: str,
+        pages: int,
+        published_date: str,
+        isbn: str,
+        description: str,
+        issue_number: int,
+        product_image_url: str,
+        main_category: int,
+        sub_category: int,
+        main_url: str,
+        sub_url: str,
+    ) -> bool:
+        with transaction.atomic():
+            Product.objects.filter(id=product_id).update(
+                title=title,
+                price=price,
+                language=language,
+                size=size,
+                pages=pages,
+                published_date=published_date,
+                isbn=isbn,
+                description=description,
+                issue_number=issue_number,
+                product_image_url=product_image_url,
+                main_category=Category.objects.get(id=main_category),
+                sub_category=Category.objects.get(id=sub_category),
+            )
+            ProductImage.objects.filter(product_id=product_id).update(
+                main_url=main_url,
+                sub_url=sub_url,
+            )
+        return True
+
+    def delete_product_and_image(self, product_id: int):
+        Product.objects.get(id=product_id).delete()
+        return True

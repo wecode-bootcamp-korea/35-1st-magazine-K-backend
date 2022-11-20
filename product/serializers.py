@@ -11,23 +11,23 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ["main_url", "sub_url"]
+
+
 class ProductListSerializer(serializers.ModelSerializer):
+    productimage = ProductImageSerializer(read_only=True)
+
     class Meta:
         model = Product
-        fields = ["id", "title", "price", "issue_number", "main_category", "main_url", "sub_url"]
+        fields = ["id", "title", "price", "issue_number", "main_category", "productimage"]
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = "__all__"
-
-
-class ProductImageSerializer(serializers.ModelSerializer):
-    product_list = ProductListSerializer(read_only=True)
-
-    class Meta:
-        model = ProductImage
         fields = "__all__"
 
 
@@ -68,6 +68,9 @@ class CategoryRepo:
         created = Category.objects.create(name=name)
         return CategorySerializer(created).data
 
+    def get_category(self, category_id: int) -> object:
+        return Category.objects.get(id=category_id)
+
     def get_category_list(self) -> dict:
         categories = Category.objects.all()
         return CategorySerializer(categories, many=True).data
@@ -83,9 +86,9 @@ class CategoryRepo:
 
 class ProductRepo:
     def __init__(self) -> None:
-        pass
+        self.category_repo = CategoryRepo()
 
-    def create_product_and_image(
+    def create_product(
         self,
         title: str,
         price: int,
@@ -99,30 +102,22 @@ class ProductRepo:
         product_image_url: str,
         main_category: int,
         sub_category: int,
-        main_url: str,
-        sub_url: str,
-    ) -> bool:
-        with transaction.atomic():
-            created = Product.objects.create(
-                title=title,
-                price=price,
-                language=language,
-                size=size,
-                pages=pages,
-                published_date=published_date,
-                isbn=isbn,
-                description=description,
-                issue_number=issue_number,
-                product_image_url=product_image_url,
-                main_category=Category.objects.get(id=main_category),
-                sub_category=Category.objects.get(id=sub_category),
-            )
-            ProductImage.objects.create(
-                product_id=created.id,
-                main_url=main_url,
-                sub_url=sub_url,
-            )
-        return True
+    ) -> object:
+        created = Product.objects.create(
+            title=title,
+            price=price,
+            language=language,
+            size=size,
+            pages=pages,
+            published_date=published_date,
+            isbn=isbn,
+            description=description,
+            issue_number=issue_number,
+            product_image_url=product_image_url,
+            main_category=self.category_repo.get_category(category_id=main_category),
+            sub_category=self.category_repo.get_category(category_id=sub_category),
+        )
+        return ProductSerializer(created).data
 
     def get_product_detail(self, product_id: int) -> dict:
         product = Product.objects.get(id=product_id)
@@ -176,30 +171,40 @@ class ProductRepo:
         product_image_url: str,
         main_category: int,
         sub_category: int,
-        main_url: str,
-        sub_url: str,
     ) -> bool:
-        with transaction.atomic():
-            Product.objects.filter(id=product_id).update(
-                title=title,
-                price=price,
-                language=language,
-                size=size,
-                pages=pages,
-                published_date=published_date,
-                isbn=isbn,
-                description=description,
-                issue_number=issue_number,
-                product_image_url=product_image_url,
-                main_category=Category.objects.get(id=main_category),
-                sub_category=Category.objects.get(id=sub_category),
-            )
-            ProductImage.objects.filter(product_id=product_id).update(
-                main_url=main_url,
-                sub_url=sub_url,
-            )
+        Product.objects.filter(id=product_id).update(
+            title=title,
+            price=price,
+            language=language,
+            size=size,
+            pages=pages,
+            published_date=published_date,
+            isbn=isbn,
+            description=description,
+            issue_number=issue_number,
+            product_image_url=product_image_url,
+            main_category=Category.objects.get(id=main_category),
+            sub_category=Category.objects.get(id=sub_category),
+        )
         return True
 
     def delete_product_and_image(self, product_id: int):
         Product.objects.get(id=product_id).delete()
+        return True
+
+
+class ProductImageRepo:
+    def create_product_image(self, product_id: int, main_url: str, sub_url: str) -> dict:
+        created = ProductImage.objects.create(
+            product_id=product_id,
+            main_url=main_url,
+            sub_url=sub_url,
+        )
+        return ProductImageSerializer(created).data
+
+    def update_product_image(self, product_id: int, main_url: str, sub_url: str) -> dict:
+        ProductImage.objects.filter(product_id=product_id).update(
+            main_url=main_url,
+            sub_url=sub_url,
+        )
         return True

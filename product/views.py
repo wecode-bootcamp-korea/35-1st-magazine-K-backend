@@ -4,9 +4,11 @@ from rest_framework import status
 from django.http import JsonResponse
 
 from .serializers import CategoryRepo, ProductRepo, ProductReq, CategoryReq
+from .utils.product_provider import ProductService
 
 category_repo = CategoryRepo()
 product_repo = ProductRepo()
+product_service = ProductService()
 
 
 class CategoryAPI(APIView):
@@ -41,7 +43,7 @@ def get_product_list(request):
     keyword = request.GET.get("keyword", "")
     offset = request.GET.get("offset", 0)
     limit = request.GET.get("limit", 10)
-    product_list = product_repo.get_product_list_with_filter(
+    product_list = product_repo.get_product_and_image_list_with_filter(
         category=category,
         sort_by=sort_by,
         keyword=keyword,
@@ -60,7 +62,7 @@ class ProductAPI(APIView):
         params = request.data
         serializer = ProductReq(data=params)
         serializer.is_valid(raise_exception=True)
-        product_repo.create_product_and_image(**serializer.data)
+        product_service.create_product_and_image(**serializer.data)
         return JsonResponse({"status": status.HTTP_201_CREATED})
 
     def put(self, request, product_id: int):

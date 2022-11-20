@@ -92,22 +92,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Django ORM 로그 확인용
-# LOGGING = {
-#     'disable_existing_loggers': False,
-#     'version': 1,
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#             'level': 'DEBUG',
-#         },
-#     },
-#     'loggers': {
-#         'django.db.backends': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',
-#             'propagate': False,
-#         },
-#     },
-# }
+LOGGING = {
+    "disable_existing_loggers": False,
+    "version": 1,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
 
 JWT_EXPIRE_TIME = int(os.environ.get("JWT_EXPIRE_TIME"))

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.db.models import Q
+from django.db import transaction
 
-from .models import Category, Product
+from .models import Category, Product, ProductImage
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -10,13 +11,31 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ProductListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ["id", "title", "price", "issue_number", "main_category", "main_url", "sub_url"]
+
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = "__all__"
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    product_list = ProductListSerializer(read_only=True)
+
+    class Meta:
+        model = ProductImage
+        fields = "__all__"
+
+
 class ProductReq(serializers.Serializer):
+    """
+    상품 등록 요청 직렬화
+    """
+
     title = serializers.CharField(max_length=30)
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     language = serializers.CharField(max_length=20)
@@ -29,9 +48,15 @@ class ProductReq(serializers.Serializer):
     product_image_url = serializers.CharField(max_length=200)
     main_category = serializers.IntegerField()
     sub_category = serializers.IntegerField()
+    main_url = serializers.CharField()
+    sub_url = serializers.CharField()
 
 
 class CategoryReq(serializers.Serializer):
+    """
+    카테고리 등록 요청 직렬화
+    """
+
     name = serializers.CharField(max_length=20)
 
 
@@ -60,6 +85,49 @@ class ProductRepo:
     def __init__(self) -> None:
         pass
 
+    def create_product(
+        self,
+        title: str,
+        price: int,
+        language: str,
+        size: str,
+        pages: int,
+        published_date: str,
+        isbn: str,
+        description: str,
+        issue_number: int,
+        product_image_url: str,
+        main_category: int,
+        sub_category: int,
+        main_url: str,
+        sub_url: str,
+    ) -> bool:
+        with transaction.atomic():
+            created = Product.objects.create(
+                title=title,
+                price=price,
+                language=language,
+                size=size,
+                pages=pages,
+                published_date=published_date,
+                isbn=isbn,
+                description=description,
+                issue_number=issue_number,
+                product_image_url=product_image_url,
+                main_category=Category.objects.get(id=main_category),
+                sub_category=Category.objects.get(id=sub_category),
+            )
+            ProductImage.objects.create(
+                product_id=created.id,
+                main_url=main_url,
+                sub_url=sub_url,
+            )
+        return ProductSerializer(created).data
+
+    def get_product_by_id(self, product_id: int) -> dict:
+        product = Product.objects.get(id=product_id)
+        return ProductSerializer(product).data
+
     def get_product_list_with_filter(
         self,
         category: int,
@@ -84,41 +152,10 @@ class ProductRepo:
         if keyword:
             filter_options &= Q(title__icontains=keyword)
 
-        list = (
-            Product.objects.filter(filter_options)
-            .order_by(sort_options[sort_by])
-            .select_related("productimage")[offset : offset + limmit]
+        product_list = (
+            Product.objects.select_related("productimage")
+            .filter(filter_options)
+            .order_by(sort_options[sort_by])[offset : offset + limmit]
         )
 
-        return ProductSerializer(list, many=True).data
-
-    def create_product(
-        self,
-        title: str,
-        price: int,
-        language: str,
-        size: str,
-        pages: int,
-        published_date: str,
-        isbn: str,
-        description: str,
-        issue_number: int,
-        product_image_url: str,
-        main_category: int,
-        sub_category: int,
-    ) -> bool:
-        created = Product.objects.create(
-            title=title,
-            price=price,
-            language=language,
-            size=size,
-            pages=pages,
-            published_date=published_date,
-            isbn=isbn,
-            description=description,
-            issue_number=issue_number,
-            product_image_url=product_image_url,
-            main_category=Category.objects.get(id=main_category),
-            sub_category=Category.objects.get(id=sub_category),
-        )
-        return ProductSerializer(created).data
+        return ProductListSerializer(product_list, many=True).data

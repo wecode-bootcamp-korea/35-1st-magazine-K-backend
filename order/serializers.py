@@ -71,8 +71,9 @@ class OrderRepo:
 
 
 class OrderItemRepo:
-    def __init__(self) -> None:
-        pass
+    """
+    장바구니 상품 관련 Repo
+    """
 
     def create_order_item(self, order_id: int, product_id: int, order_quantity: int) -> object:
         created = OrderItem.objects.create(
@@ -113,3 +114,15 @@ class OrderItemRepo:
     def get_cart_items_with_product(self, order_id: int) -> dict:
         order_items = OrderItem.objects.select_related("product").filter(order_id=order_id)
         return OrderItemSerializer(order_items, many=True).data
+
+    """
+    주문 완료된 상품 관련 Repo
+    """
+
+    def get_ordered_item_or_none(self, user_id: int, product_id: int) -> object:
+        order_item = OrderItem.objects.filter(
+            order__user=user_id,
+            product_id=product_id,
+            order__order_status=OrderStatusEnum.DELIVERY_COMPLETED.value,
+        )
+        return order_item.first()

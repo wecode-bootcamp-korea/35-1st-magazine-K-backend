@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from ..serializers import UserRepo
-from core.utils.exceptions import (
+from user.utils.exceptions import (
     NotFoundError,
     NotFoundUserError,
     NotAuthorizedError,

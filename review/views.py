@@ -1,76 +1,39 @@
-import json
-
-from enum import Enum
-
-from django.views import View
+from rest_framework.views import APIView
+from rest_framework import status
 from django.http import JsonResponse
 
 from core.utils.login_decorator import login_decorator
+from .serializers import ReviewReq, ReviewUpdateReq
+from .utils.review_provider import ReviewService
 
-from review.models import Review
-from product.models import Product
-from order.models import Order, OrderItem, OrderStatus
-
-
-class OrderStatusEnum(Enum):
-    CART = 1
-    BEFORE_DEPOSIT = 2
-    PREPARING_FOR_DELIVERY = 3
-    SHIPPING = 4
-    DELIVERY_COMPLETED = 5
-    EXCHANGE = 6
-    RETURN = 7
+review_service = ReviewService()
 
 
-class ReviewView(View):
+class ReviewAPI(APIView):
     @login_decorator
     def post(self, request, product_id):
-        try:
-            data = json.loads(request.body)
-            user = request.user
-            content = data["content"]
-            rating = data["rating"]
-            orderd_products = OrderItem.objects.filter(
-                order__user=user,
-                order__order_status=OrderStatusEnum.DELIVERY_COMPLETED.value,
-                product_id=product_id,
-            )
-
-            if not orderd_products.exists():
-                return JsonResponse({"MESSAGE": "INVALID_REQUEST"}, status=401)
-
-            Review.objects.create(
-                user=user,
-                content=content,
-                rating=rating,
-                product_id=product_id,
-            )
-            return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
-        except KeyError:
-            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
+        user = request.user
+        params = request.data
+        serializer = ReviewReq(data=params)
+        serializer.is_valid(raise_exception=True)
+        review_service.create_review(product_id=product_id, user_id=user["id"], **serializer.data)
+        return JsonResponse({"status": status.HTTP_201_CREATED})
 
     def get(self, request, product_id):
-        reviews = Review.objects.filter(product_id=product_id)
-
-        results = [
-            {
-                "review": review.id,
-                "username": review.user.username,
-                "content": review.content,
-                "rating": review.rating,
-            }
-            for review in reviews
-        ]
-        return JsonResponse({"RESULTS": results}, status=200)
+        reviews = review_service.get_review_list(product_id=product_id)
+        return JsonResponse({"res": reviews, "status": status.HTTP_200_OK})
 
     @login_decorator
-    def delete(self, request, product_id, review_id):
-        try:
-            user = request.user
-            review = Review.objects.get(id=review_id, user=user, product=product_id)
+    def put(self, request, review_id: int):
+        user = request.user
+        params = request.data
+        serializer = ReviewUpdateReq(data=params)
+        serializer.is_valid(raise_exception=True)
+        review_service.update_review(user_id=user["id"], review_id=review_id, **serializer.data)
+        return JsonResponse({"status": status.HTTP_200_OK})
 
-            review.delete()
-            return JsonResponse({"MESSAGE": "SUCCESS"}, status=204)
-
-        except Review.DoesNotExist:
-            return JsonResponse({"MESSAGE": "INVALID_REVIEW"}, status=401)
+    @login_decorator
+    def delete(self, request, review_id: int):
+        user = request.user
+        review_service.delete_review(user_id=user["id"], review_id=review_id)
+        return JsonResponse({"status": status.HTTP_200_OK})

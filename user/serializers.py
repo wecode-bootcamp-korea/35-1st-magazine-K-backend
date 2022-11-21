@@ -2,7 +2,7 @@ import decimal
 
 from rest_framework import serializers
 
-from core.utils.exceptions import NotFoundError
+from user.utils.exceptions import NotFoundError
 from .models import User
 
 

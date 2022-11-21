@@ -4,9 +4,11 @@ from django.http import JsonResponse
 
 from .serializers import OrderReq, OrderStatusReq, OrderStatusRepo
 from .utils.cart_provicer import CartService
+from .utils.order_provider import OrderService
 from core.utils.login_decorator import login_decorator
 
 cart_service = CartService()
+order_service = OrderService()
 order_status_repo = OrderStatusRepo()
 
 
@@ -41,6 +43,15 @@ class CartAPI(APIView):
         user = request.user
         cart_service.delete_cart_item(user_id=user["id"], product_id=product_id)
         return JsonResponse({"status": status.HTTP_200_OK})
+
+
+class OrderAPI(APIView):
+    # TODO 상품 주문시 회원의 포인트와 주문완료된 상품의 정보를 전달해야하는지 알아볼 것
+    @login_decorator
+    def post(self, request):
+        user = request.user
+        order_service.order_items_in_cart(user_id=user["id"])
+        return JsonResponse({"status": status.HTTP_201_CREATED})
 
 
 class OrderStatusAPI(APIView):

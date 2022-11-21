@@ -27,7 +27,6 @@ class ProductService:
         main_url: str,
         sub_url: str,
     ) -> List[dict]:
-        res = []
         with transaction.atomic():
             product = self.product_repo.create_product(
                 title=title,
@@ -43,11 +42,32 @@ class ProductService:
                 main_category=main_category,
                 sub_category=sub_category,
             )
-            res.append(product)
-            product_image = self.product_image_repo.create_product_image(
+            self.product_image_repo.create_product_image(
                 product_id=product["id"],
                 main_url=main_url,
                 sub_url=sub_url,
             )
-            res.append(product_image)
-        return res
+        return True
+
+    # TODO 상품 id가 존재하지 않는 것에 대한 요청 유효성 검증 필요
+    def update_product_and_image(
+        self,
+        product_id: int,
+        title: str,
+        price: int,
+        language: str,
+        size: str,
+        pages: int,
+        published_date: str,
+        isbn: str,
+        description: str,
+        issue_number: int,
+        product_image_url: str,
+        main_category: int,
+        sub_category: int,
+        main_url: str,
+        sub_url: str,
+    ) -> bool:
+        with transaction.atomic():
+            self.product_repo.create_product()
+        return True

@@ -1,3 +1,5 @@
+import decimal
+
 from rest_framework import serializers
 
 from core.utils.exceptions import NotFoundError
@@ -61,3 +63,9 @@ class UserRepo:
             return UserSerializer(User.objects.get(email=email)).data
         except User.DoesNotExist:
             raise NotFoundError
+
+    def deduct_user_point(self, user_id: int, total_price: float) -> bool:
+        User.objects.filter(id=user_id).update(
+            point=User.objects.get(id=user_id).point - decimal.Decimal(total_price),
+        )
+        return True

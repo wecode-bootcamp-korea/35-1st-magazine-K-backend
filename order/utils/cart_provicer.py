@@ -10,7 +10,7 @@ order_item_repo = OrderItemRepo()
 
 class CartService:
     def add_item_to_cart(self, user_id: int, product_id: int, order_quantity: int) -> bool:
-        cart = order_repo.get_order_queryset_in_cart_status_or_none(user_id=user_id)
+        cart = order_repo.get_order_in_cart_status_or_none(user_id=user_id)
         cart_item = order_item_repo.get_order_item_or_none(user_id=user_id, product_id=product_id)
         if not cart:
             with transaction.atomic():
@@ -40,5 +40,5 @@ class CartService:
         return order_item_repo.update_order_item(cart_item=cart_item, calculation=calculation)
 
     def delete_cart_item(self, user_id: int, product_id: int) -> bool:
-        cart = order_repo.get_order_queryset_in_cart_status_or_none(user_id=user_id)
+        cart = order_repo.get_order_in_cart_status_or_none(user_id=user_id)
         return order_item_repo.delete_order_item(order_id=cart.id, product_id=product_id)

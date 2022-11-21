@@ -1,10 +1,16 @@
+from typing import List
+import uuid
+
 from rest_framework import serializers
 
+from product.serializers import ProductSerializer
 from .models import Order, OrderItem, OrderStatus
 from .utils.enums import OrderStatusEnum
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+
     class Meta:
         model = OrderItem
         fields = "__all__"
@@ -46,12 +52,22 @@ class OrderRepo:
         )
         return created
 
-    def get_order_queryset_in_cart_status_or_none(
+    def get_order_in_cart_status_or_none(
         self,
         user_id: int,
     ) -> object:
         order = Order.objects.filter(user_id=user_id, order_status=self.order_status.CART.value)
         return order.first()
+
+    def update_order_status_to_delivery_completed(self, order_id: int) -> bool:
+        Order.objects.filter(id=order_id).update(
+            order_status_id=self.order_status.DELIVERY_COMPLETED.value,
+        )
+        return True
+
+    def update_order_number(self, order_id: int) -> bool:
+        Order.objects.filter(id=order_id).update(order_number=uuid.uuid4())
+        return True
 
 
 class OrderItemRepo:
@@ -66,7 +82,7 @@ class OrderItemRepo:
         )
         return created
 
-    def get_order_item_or_none(self, user_id: int, product_id: int) -> object:
+    def get_cart_item_or_none(self, user_id: int, product_id: int) -> object:
         order_item = OrderItem.objects.filter(
             order__user=user_id,
             product_id=product_id,
@@ -74,14 +90,14 @@ class OrderItemRepo:
         )
         return order_item.first()
 
-    def get_order_item_list(self, user_id: int) -> dict:
+    def get_cart_items_queryset(self, user_id: int) -> dict:
         order_items = OrderItem.objects.filter(
             order__user=user_id,
             order__order_status=OrderStatusEnum.CART.value,
         )
         return OrderItemSerializer(order_items, many=True).data
 
-    def update_order_item(self, cart_item: object, calculation: str = "add") -> dict:
+    def update_order_item_quantity(self, cart_item: object, calculation: str = "add") -> dict:
         if calculation == "add":
             cart_item.order_quantity += 1
             cart_item.save()
@@ -93,3 +109,7 @@ class OrderItemRepo:
     def delete_order_item(self, order_id: int, product_id: int) -> bool:
         OrderItem.objects.get(order_id=order_id, product_id=product_id).delete()
         return True
+
+    def get_cart_items_with_product(self, order_id: int) -> dict:
+        order_items = OrderItem.objects.select_related("product").filter(order_id=order_id)
+        return OrderItemSerializer(order_items, many=True).data

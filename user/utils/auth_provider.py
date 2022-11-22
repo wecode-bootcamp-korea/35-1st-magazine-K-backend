@@ -41,7 +41,7 @@ class AuthProvider:
         return request.META.get("HTTP_AUTHORIZATION", None)
 
     def create_token(self, user_id: str, is_expired: bool = False):
-        exp = 0 if is_expired else self._get_curr_sec() + self.expire_sec
+        exp = 0 if is_expired else self._get_curr_sec() + int(self.expire_sec)
         encoded_jwt = jwt.encode(
             {"id": user_id, "exp": exp},
             self.key,

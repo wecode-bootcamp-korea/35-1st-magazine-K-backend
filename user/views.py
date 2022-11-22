@@ -14,7 +14,7 @@ def signup(request):
     serializer = SignupReq(data=params)
     serializer.is_valid()
     auth_provider.signup(**serializer.data)
-    return JsonResponse({"status": status.HTTP_201_CREATED})
+    return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])
@@ -23,11 +23,11 @@ def signin(request):
     serializer = SigninReq(data=params)
     serializer.is_valid()
     token = auth_provider.signin(**serializer.data)
-    return JsonResponse({"access_token": token, "status": status.HTTP_200_OK})
+    return JsonResponse({"access_token": token}, status=status.HTTP_200_OK)
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def signout(request):
     token = auth_provider.get_token_from_request(request=request)
     expired_token = auth_provider.signout(token=token)
-    return JsonResponse({"expired_token": expired_token, "status": status.HTTP_200_OK})
+    return JsonResponse({"expired_token": expired_token}, status=status.HTTP_200_OK)

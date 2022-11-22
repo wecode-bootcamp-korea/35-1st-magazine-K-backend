@@ -90,6 +90,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+JWT_EXPIRE_TIME = os.environ.get("JWT_EXPIRE_TIME")
 
 # Django ORM 로그 확인용
 # LOGGING = {
@@ -109,5 +110,3 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #         },
 #     },
 # }
-
-JWT_EXPIRE_TIME = int(os.environ.get("JWT_EXPIRE_TIME"))

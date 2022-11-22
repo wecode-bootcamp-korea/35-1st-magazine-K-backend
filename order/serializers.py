@@ -98,7 +98,7 @@ class OrderItemRepo:
         )
         return OrderItemSerializer(order_items, many=True).data
 
-    def update_order_item_quantity(self, cart_item: object, calculation: str = "add") -> dict:
+    def update_cart_item_quantity(self, cart_item: object, calculation: str = "add") -> dict:
         if calculation == "add":
             cart_item.order_quantity += 1
             cart_item.save()
@@ -107,7 +107,7 @@ class OrderItemRepo:
             cart_item.save()
         return OrderItemSerializer(cart_item).data
 
-    def delete_order_item(self, order_id: int, product_id: int) -> bool:
+    def delete_cart_item(self, order_id: int, product_id: int) -> bool:
         OrderItem.objects.get(order_id=order_id, product_id=product_id).delete()
         return True
 

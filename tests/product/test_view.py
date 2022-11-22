@@ -17,8 +17,8 @@ def django_db_setup():
 
 @pytest.mark.django_db()
 def test_create_category_success():
-    payload = {"name": "테스트"}
-    response = client.post("/api/category/", payload)
+    data = {"name": "테스트"}
+    response = client.post("/api/category/", data=data)
     assert response.status_code == 201
 
 
@@ -30,8 +30,8 @@ def test_get_category_list_success():
 
 @pytest.mark.django_db()
 def test_update_category_success():
-    payload = {"name": "테스트"}
-    response = client.put("/api/category/1/", payload)
+    data = {"name": "테스트"}
+    response = client.put("/api/category/1/", data=data)
     assert response.status_code == 200
 
 
@@ -48,7 +48,7 @@ def test_delete_category_success():
 
 @pytest.mark.django_db()
 def test_create_product_success():
-    payload = {
+    data = {
         "title": "테스트",
         "price": 10000,
         "language": "ko",
@@ -64,7 +64,7 @@ def test_create_product_success():
         "main_url": "테스트",
         "sub_url": "테스트",
     }
-    response = client.post("/api/product/", payload)
+    response = client.post("/api/product/", data=data)
     assert response.status_code == 201
 
 
@@ -82,7 +82,7 @@ def test_get_product_list_success():
 
 @pytest.mark.django_db()
 def test_update_product_success():
-    payload = {
+    data = {
         "title": "테스트",
         "price": 10000,
         "language": "ko",
@@ -96,7 +96,7 @@ def test_update_product_success():
         "main_category": 1,
         "sub_category": 2,
     }
-    response = client.put("/api/product/2/", payload)
+    response = client.put("/api/product/2/", data=data)
     assert response.status_code == 200
 
 

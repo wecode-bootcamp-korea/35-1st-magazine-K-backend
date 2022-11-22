@@ -15,23 +15,23 @@ def django_db_setup():
 
 @pytest.mark.django_db()
 def test_sign_up_success():
-    payload = dict(
+    data = dict(
         email="test@test.com",
         password="Test1234!",
         name="테스트",
         phone_number="010-0000-0000",
     )
-    response = client.post("/api/signup/", payload)
+    response = client.post("/api/signup/", data=data)
     assert response.status_code == 201
 
 
 @pytest.mark.django_db()
 def test_sign_in_success():
-    payload = dict(
+    data = dict(
         email="test1@test.com",
         password="Test1234!",
     )
-    response = client.post("/api/signin/", payload)
+    response = client.post("/api/signin/", data=data)
     assert response.status_code == 200
 
 

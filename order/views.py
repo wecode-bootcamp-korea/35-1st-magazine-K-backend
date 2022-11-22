@@ -48,10 +48,10 @@ class CartAPI(APIView):
 class OrderAPI(APIView):
     # TODO 상품 주문시 회원의 포인트와 주문완료된 상품의 정보를 전달해야하는지 알아볼 것
     @login_decorator
-    def post(self, request):
+    def put(self, request):
         user = request.user
         order_service.order_items_in_cart(user_id=user["id"])
-        return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
+        return JsonResponse({"msg": "Created"}, status=status.HTTP_200_OK)
 
 
 class OrderStatusAPI(APIView):

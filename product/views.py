@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.http import JsonResponse
 
-from .serializers import CategoryRepo, ProductRepo, ProductReq, CategoryReq
+from .serializers import CategoryRepo, ProductRepo, ProductCreateReq, ProductUpdateReq, CategoryReq
 from .utils.product_provider import ProductService
 
 category_repo = CategoryRepo()
@@ -60,14 +60,14 @@ class ProductAPI(APIView):
 
     def post(self, request):
         params = request.data
-        serializer = ProductReq(data=params)
+        serializer = ProductCreateReq(data=params)
         serializer.is_valid(raise_exception=True)
         product_service.create_product_and_image(**serializer.data)
         return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
     def put(self, request, product_id: int):
         params = request.data
-        serializer = ProductReq(data=params)
+        serializer = ProductUpdateReq(data=params)
         serializer.is_valid(raise_exception=True)
         product_repo.update_product_and_image(product_id=product_id, **serializer.data)
         return JsonResponse({"msg": "Updated"}, status=status.HTTP_200_OK)

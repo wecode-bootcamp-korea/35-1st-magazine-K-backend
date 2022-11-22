@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.db.models import Q
-from django.db import transaction
 
 from .models import Category, Product, ProductImage
 
@@ -31,9 +30,9 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductReq(serializers.Serializer):
+class ProductCreateReq(serializers.Serializer):
     """
-    상품 등록 및 수정 요청 직렬화
+    상품 등록 요청 직렬화
     """
 
     title = serializers.CharField(max_length=30)
@@ -50,6 +49,25 @@ class ProductReq(serializers.Serializer):
     sub_category = serializers.IntegerField()
     main_url = serializers.CharField()
     sub_url = serializers.CharField()
+
+
+class ProductUpdateReq(serializers.Serializer):
+    """
+    상품 수정 요청 직렬화
+    """
+
+    title = serializers.CharField(max_length=30)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    language = serializers.CharField(max_length=20)
+    size = serializers.CharField(max_length=30)
+    pages = serializers.IntegerField()
+    published_date = serializers.CharField(max_length=20)
+    isbn = serializers.CharField(max_length=20)
+    description = serializers.CharField()
+    issue_number = serializers.IntegerField()
+    product_image_url = serializers.CharField(max_length=200)
+    main_category = serializers.IntegerField()
+    sub_category = serializers.IntegerField()
 
 
 class CategoryReq(serializers.Serializer):

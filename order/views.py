@@ -20,13 +20,13 @@ class CartAPI(APIView):
         serializer = OrderReq(data=params)
         serializer.is_valid(raise_exception=True)
         cart_service.add_item_to_cart(user_id=user["id"], **serializer.data)
-        return JsonResponse({"status": status.HTTP_201_CREATED})
+        return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
     @login_decorator
     def get(self, request):
         user = request.user
         cart_items = cart_service.get_cart_list(user_id=user["id"])
-        return JsonResponse({"res": cart_items, "status": status.HTTP_200_OK})
+        return JsonResponse({"res": cart_items}, status=status.HTTP_200_OK)
 
     @login_decorator
     def put(self, request, product_id: int, calculation: str = "add"):
@@ -36,13 +36,13 @@ class CartAPI(APIView):
             product_id=product_id,
             calculation=calculation,
         )
-        return JsonResponse({"res": updated_item, "status": status.HTTP_200_OK})
+        return JsonResponse({"msg": "Updated"}, status=status.HTTP_200_OK)
 
     @login_decorator
     def delete(self, request, product_id: int):
         user = request.user
         cart_service.delete_cart_item(user_id=user["id"], product_id=product_id)
-        return JsonResponse({"status": status.HTTP_200_OK})
+        return JsonResponse({"msg": "Deleted"}, status=status.HTTP_200_OK)
 
 
 class OrderAPI(APIView):
@@ -51,7 +51,7 @@ class OrderAPI(APIView):
     def post(self, request):
         user = request.user
         order_service.order_items_in_cart(user_id=user["id"])
-        return JsonResponse({"status": status.HTTP_201_CREATED})
+        return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
 
 class OrderStatusAPI(APIView):
@@ -60,4 +60,4 @@ class OrderStatusAPI(APIView):
         serializer = OrderStatusReq(data=params)
         serializer.is_valid(raise_exception=True)
         order_status_repo.create_order_status(**serializer.data)
-        return JsonResponse({"status": status.HTTP_201_CREATED})
+        return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)

@@ -17,22 +17,22 @@ class CategoryAPI(APIView):
         serializer = CategoryReq(data=params)
         serializer.is_valid(raise_exception=True)
         created = category_repo.create_category(**serializer.data)
-        return JsonResponse({"status": status.HTTP_201_CREATED})
+        return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
     def get(self, request):
         category_list = category_repo.get_category_list()
-        return JsonResponse({"res": category_list, "status": status.HTTP_200_OK})
+        return JsonResponse({"res": category_list}, status=status.HTTP_200_OK)
 
     def put(self, request, category_id: int):
         params = request.data
         serializer = CategoryReq(data=params)
         serializer.is_valid(raise_exception=True)
         updated = category_repo.update_category(category_id=category_id, **serializer.data)
-        return JsonResponse({"status": status.HTTP_200_OK})
+        return JsonResponse({"msg": "Updated"}, status=status.HTTP_200_OK)
 
     def delete(self, request, category_id: int):
         deleted = category_repo.delete_category(category_id=category_id)
-        return JsonResponse({"status": status.HTTP_200_OK})
+        return JsonResponse({"msg": "Deleted"}, status=status.HTTP_200_OK)
 
 
 # TODO 일대일 관계 역참조 테이블 직렬화 관련 이슈
@@ -50,28 +50,28 @@ def get_product_list(request):
         offset=offset,
         limmit=limit,
     )
-    return JsonResponse({"res": product_list, "status": status.HTTP_200_OK})
+    return JsonResponse({"res": product_list}, status=status.HTTP_200_OK)
 
 
 class ProductAPI(APIView):
     def get(self, request, product_id: int):
         product = product_repo.get_product_detail(product_id=product_id)
-        return JsonResponse({"res": product, "status": status.HTTP_200_OK})
+        return JsonResponse({"res": product}, status=status.HTTP_200_OK)
 
     def post(self, request):
         params = request.data
         serializer = ProductReq(data=params)
         serializer.is_valid(raise_exception=True)
         product_service.create_product_and_image(**serializer.data)
-        return JsonResponse({"status": status.HTTP_201_CREATED})
+        return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
     def put(self, request, product_id: int):
         params = request.data
         serializer = ProductReq(data=params)
         serializer.is_valid(raise_exception=True)
         product_repo.update_product_and_image(product_id=product_id, **serializer.data)
-        return JsonResponse({"status": status.HTTP_200_OK})
+        return JsonResponse({"msg": "Updated"}, status=status.HTTP_200_OK)
 
     def delete(self, request, product_id: int):
         product_repo.delete_product_and_image(product_id=product_id)
-        return JsonResponse({"status": status.HTTP_200_OK})
+        return JsonResponse({"msg": "Deleted"}, status=status.HTTP_200_OK)

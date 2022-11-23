@@ -31,7 +31,7 @@ class CartAPI(APIView):
     @login_decorator
     def put(self, request, product_id: int, calculation: str = "add"):
         user = request.user
-        updated_item = cart_service.update_cart_item_quantity(
+        cart_service.update_cart_item_quantity(
             user_id=user["id"],
             product_id=product_id,
             calculation=calculation,
@@ -46,7 +46,6 @@ class CartAPI(APIView):
 
 
 class OrderAPI(APIView):
-    # TODO 상품 주문시 회원의 포인트와 주문완료된 상품의 정보를 전달해야하는지 알아볼 것
     @login_decorator
     def put(self, request):
         user = request.user

@@ -1,20 +1,31 @@
 from rest_framework import status
+from rest_framework.exceptions import APIException
+
+from rest_framework.views import exception_handler
 
 
-class CustomBaseExecption(Exception):
-    is_custom_execption = True
+def custom_exception_handler(exc, context):
+    # Call REST framework's default exception handler first,
+    # to get the standard error response.
+    response = exception_handler(exc, context)
+
+    # Now add the HTTP status code to the response.
+    if response is not None:
+        response.data["status_code"] = response.status_code
+
+    return response
 
 
-class KeyError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Invaild key. Check the key"
-        self.status = status.HTTP_400_BAD_REQUEST
+class KeyError(APIException):
+    default_detail = "Invaild key. Check the key"
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "invaild_key"
 
 
-class DuplicateError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Contains data that does not allow duplication. Please check request"
-        self.status = status.HTTP_400_BAD_REQUEST
+class DuplicateError(APIException):
+    default_detail = "Contains data that does not allow duplication. Please check request"
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "not_allow_dupilcate"
 
 
 """
@@ -22,52 +33,52 @@ class DuplicateError(CustomBaseExecption):
 """
 
 
-class InvaildPayloadError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Invaild payload. Please check token or signin again"
-        self.status = status.HTTP_400_BAD_REQUEST
+class InvaildPayloadError(APIException):
+    default_detail = "Invaild payload. Please check token or signin again"
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "invaild_payload"
 
 
-class NotFoundUserError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "User not found. Please check email"
-        self.status = status.HTTP_400_BAD_REQUEST
+class NotFoundUserError(APIException):
+    default_detail = "User not found. Please check email"
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "user_not_found"
 
 
-class IncorrectPasswordError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Password is worng. Please check password"
-        self.status = status.HTTP_400_BAD_REQUEST
+class IncorrectPasswordError(APIException):
+    default_detail = "Password is worng. Please check password"
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "password_is_worng"
 
 
-class NotAuthorizedError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Login required"
-        self.status = status.HTTP_403_FORBIDDEN
+class NotAuthorizedError(APIException):
+    default_detail = "Login required"
+    status_code = status.HTTP_403_FORBIDDEN
+    default_code = "login_required"
 
 
-class NoPermssionError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Unauthorized request. Please check your permission"
-        self.status = status.HTTP_401_UNAUTHORIZED
+class NoPermssionError(APIException):
+    default_detail = "Unauthorized request. Please check your permission"
+    status_code = status.HTTP_401_UNAUTHORIZED
+    default_code = "unauthorized_request"
 
 
-class TokenExpiredError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Login time expired. Please login again"
-        self.status = status.HTTP_403_FORBIDDEN
+class TokenExpiredError(APIException):
+    default_detail = "Login time expired. Please login again"
+    status_code = status.HTTP_403_FORBIDDEN
+    default_code = "login_time_expired"
 
 
-class EmailValidateError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Email not vaild. Please check email"
-        self.status = status.HTTP_400_BAD_REQUEST
+class EmailValidateError(APIException):
+    default_detail = "Email not vaild. Please check email"
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "email_not_vaild"
 
 
-class PasswordValidateError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Password not vaild. Please check email"
-        self.status = status.HTTP_400_BAD_REQUEST
+class PasswordValidateError(APIException):
+    default_detail = "Password not vaild. Please check email"
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_code = "password_not_vaild"
 
 
 """
@@ -75,7 +86,18 @@ class PasswordValidateError(CustomBaseExecption):
 """
 
 
-class NotFoundProductError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Product not found. Please check product_id"
-        self.status = status.HTTP_400_BAD_REQUEST
+class NotFoundProductError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Product not found. Please check product_id"
+    default_code = "product_not_found"
+
+
+"""
+장바구니 관련 예외처리
+"""
+
+
+class OutOfRangeError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The number of products cannot be less than one. Please check number"
+    default_code = "out_of_range"

@@ -1,4 +1,3 @@
-from typing import List
 import uuid
 
 from rest_framework import serializers

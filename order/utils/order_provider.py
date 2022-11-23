@@ -9,6 +9,10 @@ order_item_repo = OrderItemRepo()
 
 
 class OrderService:
+    """
+    상품 주문 관련 서비스 로직을 제공하는 클래스
+    """
+
     def order_items_in_cart(self, user_id: int) -> bool:
         """
         장바구니에 담겨있는 상품을 포인트로 결제하여 주문하는 기능
@@ -18,7 +22,7 @@ class OrderService:
         배송 관련 기능은 아직 개발되지 않아 결제 즉시 배송완료 상태가 되도록 했습니다.
         """
         total_price = 0
-        user = user_repo.get_user_by_id(user_id=user_id)
+        user_repo.get_user_by_id(user_id=user_id)
         order = order_repo.get_order_in_cart_status_or_none(user_id=user_id)
         order_items = order_item_repo.get_cart_items_with_product(order_id=order.id)
 

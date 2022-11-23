@@ -92,6 +92,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 JWT_EXPIRE_TIME = os.environ.get("JWT_EXPIRE_TIME")
 
+REST_FRAMEWORK = {"EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler"}
+
 # Django ORM 로그 확인용
 # LOGGING = {
 #     "disable_existing_loggers": False,

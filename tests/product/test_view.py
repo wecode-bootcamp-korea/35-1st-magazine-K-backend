@@ -70,7 +70,7 @@ def test_create_product_success():
 
 @pytest.mark.django_db()
 def test_get_product_detail_success():
-    response = client.get("/api/product/2/")
+    response = client.get("/api/product/5/")
     assert response.status_code == 200
 
 
@@ -95,8 +95,10 @@ def test_update_product_success():
         "product_image_url": "테스트",
         "main_category": 1,
         "sub_category": 2,
+        "main_url": "테스트",
+        "sub_url": "테스트",
     }
-    response = client.put("/api/product/2/", data=data)
+    response = client.put("/api/product/5/", data=data)
     assert response.status_code == 200
 
 

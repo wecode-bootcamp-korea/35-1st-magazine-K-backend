@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db.models import Q
 
 from .models import Category, Product, ProductImage
+from core.exceptions import NotFoundProductError
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -30,9 +31,9 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductCreateReq(serializers.Serializer):
+class ProductReq(serializers.Serializer):
     """
-    상품 등록 요청 직렬화
+    상품 등록, 수정 요청 직렬화 클래스
     """
 
     title = serializers.CharField(max_length=30)
@@ -51,37 +52,15 @@ class ProductCreateReq(serializers.Serializer):
     sub_url = serializers.CharField()
 
 
-class ProductUpdateReq(serializers.Serializer):
-    """
-    상품 수정 요청 직렬화
-    """
-
-    title = serializers.CharField(max_length=30)
-    price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    language = serializers.CharField(max_length=20)
-    size = serializers.CharField(max_length=30)
-    pages = serializers.IntegerField()
-    published_date = serializers.CharField(max_length=20)
-    isbn = serializers.CharField(max_length=20)
-    description = serializers.CharField()
-    issue_number = serializers.IntegerField()
-    product_image_url = serializers.CharField(max_length=200)
-    main_category = serializers.IntegerField()
-    sub_category = serializers.IntegerField()
-
-
 class CategoryReq(serializers.Serializer):
     """
-    카테고리 등록 요청 직렬화
+    카테고리 등록 요청 직렬화 클래스
     """
 
     name = serializers.CharField(max_length=20)
 
 
 class CategoryRepo:
-    def __init__(self) -> None:
-        pass
-
     def create_category(self, name: str) -> dict:
         created = Category.objects.create(name=name)
         return CategorySerializer(created).data
@@ -137,18 +116,31 @@ class ProductRepo:
         )
         return ProductSerializer(created).data
 
-    def get_product_detail(self, product_id: int) -> dict:
-        product = Product.objects.get(id=product_id)
-        return ProductSerializer(product).data
+    def get_product_with_title_and_isbn(self, title: str, isbn: int):
+        return Product.objects.filter(title=title, isbn=isbn)
+
+    def get_product(self, product_id: int) -> dict:
+        try:
+            product = Product.objects.get(id=product_id)
+            return ProductSerializer(product).data
+        except Product.DoesNotExist:
+            raise NotFoundProductError
 
     def get_product_and_image_list_with_filter(
         self,
         category: int,
         sort_by: str,
         offset: int,
-        limmit: int,
+        limit: int,
         keyword: str,
     ) -> dict:
+        """
+        필터, 정렬 옵션을 적용하여 해당되는 상품의 목록을 응답합니다.
+
+        "sort_options"는 (최신 순, 오래된 순), (높은 가격 순, 낮은 가격 순)으로 정렬 옵션을 제공합니다.
+        "filter_options"는 특정 매개변수가 들어왔을 때 해당 필터를 적용하도록 하였습니다.
+        이러한 두 가지 옵션을 적용하여 "product_image"테이블을 조인하여 데이터를 제공합니다.
+        """
         sort_options = {
             "latest_issue": "-issue_number",
             "oldest_issue": "issue_number",
@@ -168,13 +160,12 @@ class ProductRepo:
         product_list = (
             Product.objects.select_related("productimage")
             .filter(filter_options)
-            .order_by(sort_options[sort_by])[offset : offset + limmit]
+            .order_by(sort_options[sort_by])[offset : offset + limit]
         )
 
         return ProductListSerializer(product_list, many=True).data
 
-    # TODO 상품 id가 존재하지 않는 것에 대한 요청 유효성 검증 필요
-    def update_product_and_image(
+    def update_product(
         self,
         product_id: int,
         title: str,
@@ -190,7 +181,10 @@ class ProductRepo:
         main_category: int,
         sub_category: int,
     ) -> bool:
-        Product.objects.filter(id=product_id).update(
+        product = Product.objects.filter(id=product_id)
+        if not product:
+            raise NotFoundProductError
+        product.update(
             title=title,
             price=price,
             language=language,
@@ -201,14 +195,17 @@ class ProductRepo:
             description=description,
             issue_number=issue_number,
             product_image_url=product_image_url,
-            main_category=Category.objects.get(id=main_category),
-            sub_category=Category.objects.get(id=sub_category),
+            main_category=self.category_repo.get_category(category_id=main_category),
+            sub_category=self.category_repo.get_category(category_id=sub_category),
         )
         return True
 
     def delete_product_and_image(self, product_id: int):
-        Product.objects.get(id=product_id).delete()
-        return True
+        try:
+            Product.objects.get(id=product_id).delete()
+            return True
+        except Product.DoesNotExist:
+            raise NotFoundProductError
 
 
 class ProductImageRepo:

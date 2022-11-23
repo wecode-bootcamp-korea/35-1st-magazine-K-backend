@@ -7,31 +7,42 @@ class CustomBaseExecption(Exception):
 
 class KeyError(CustomBaseExecption):
     def __init__(self):
-        self.msg = "Invaild Key. Check the key"
+        self.msg = "Invaild key. Check the key"
         self.status = status.HTTP_400_BAD_REQUEST
+
+
+class DuplicateError(CustomBaseExecption):
+    def __init__(self):
+        self.msg = "Contains data that does not allow duplication. Please check request"
+        self.status = status.HTTP_400_BAD_REQUEST
+
+
+"""
+인증 관련 예외처리
+"""
 
 
 class InvaildPayloadError(CustomBaseExecption):
     def __init__(self):
-        self.msg = "Invaild Payload. Please Check Token or Signin Again"
-        self.status = status.HTTP_400_BAD_REQUEST
-
-
-class NotFoundError(CustomBaseExecption):
-    def __init__(self):
-        self.msg = "Data Not Found. Please Check ID"
+        self.msg = "Invaild payload. Please check token or signin again"
         self.status = status.HTTP_400_BAD_REQUEST
 
 
 class NotFoundUserError(CustomBaseExecption):
     def __init__(self):
-        self.msg = "User Not Found. Please Check ID or Password"
+        self.msg = "User not found. Please check email"
+        self.status = status.HTTP_400_BAD_REQUEST
+
+
+class IncorrectPasswordError(CustomBaseExecption):
+    def __init__(self):
+        self.msg = "Password is worng. Please check password"
         self.status = status.HTTP_400_BAD_REQUEST
 
 
 class NotAuthorizedError(CustomBaseExecption):
     def __init__(self):
-        self.msg = "Login Required"
+        self.msg = "Login required"
         self.status = status.HTTP_403_FORBIDDEN
 
 
@@ -56,4 +67,15 @@ class EmailValidateError(CustomBaseExecption):
 class PasswordValidateError(CustomBaseExecption):
     def __init__(self):
         self.msg = "Password not vaild. Please check email"
+        self.status = status.HTTP_400_BAD_REQUEST
+
+
+"""
+상품 관련 예외처리
+"""
+
+
+class NotFoundProductError(CustomBaseExecption):
+    def __init__(self):
+        self.msg = "Product not found. Please check product_id"
         self.status = status.HTTP_400_BAD_REQUEST

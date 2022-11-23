@@ -9,12 +9,12 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ["id", "email", "password", "name", "phone_number", "point"]
 
 
 class SignupReq(serializers.Serializer):
     """
-    회원가입 요청 값 직렬화
+    회원가입 요청 값 직렬화 클래스
     """
 
     email = serializers.EmailField(max_length=100)
@@ -25,7 +25,7 @@ class SignupReq(serializers.Serializer):
 
 class SigninReq(serializers.Serializer):
     """
-    로그인 요청 값 직렬화
+    로그인 요청 값 직렬화 클래스
     """
 
     email = serializers.EmailField(max_length=100)
@@ -65,6 +65,9 @@ class UserRepo:
             raise NotFoundError
 
     def deduct_user_point(self, user_id: int, total_price: float) -> bool:
+        """
+        상품 구매 시 회원의 포인트를 차감시키는 함수
+        """
         User.objects.filter(id=user_id).update(
             point=User.objects.get(id=user_id).point - decimal.Decimal(total_price),
         )

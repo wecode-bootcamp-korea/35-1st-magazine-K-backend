@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from .serializers import OrderReq, OrderStatusReq, OrderStatusRepo
 from .utils.cart_provicer import CartService
 from .utils.order_provider import OrderService
-from core.utils.login_decorator import login_decorator
+from core.login_decorator import login_decorator
 
 cart_service = CartService()
 order_service = OrderService()

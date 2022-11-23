@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.http import JsonResponse
 
-from core.utils.login_decorator import login_decorator
+from core.login_decorator import login_decorator
 from .serializers import ReviewReq, ReviewUpdateReq
 from .utils.review_provider import ReviewService
 

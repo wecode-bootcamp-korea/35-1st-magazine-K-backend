@@ -2,7 +2,7 @@ import jwt
 
 from user.models import User
 from user.utils.auth_provider import AuthProvider
-from user.utils.exceptions import NotFoundUserError, InvaildPayloadError, KeyError
+from .exceptions import NotFoundUserError, InvaildPayloadError, KeyError
 
 auth_provider = AuthProvider()
 

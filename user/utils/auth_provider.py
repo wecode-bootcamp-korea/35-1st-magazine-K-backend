@@ -6,7 +6,7 @@ import re
 from django.conf import settings
 
 from ..serializers import UserRepo
-from user.utils.exceptions import (
+from core.exceptions import (
     NotFoundError,
     NotFoundUserError,
     NotAuthorizedError,

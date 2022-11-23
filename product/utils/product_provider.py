@@ -26,7 +26,7 @@ class ProductService:
         sub_category: int,
         main_url: str,
         sub_url: str,
-    ) -> List[dict]:
+    ) -> bool:
         with transaction.atomic():
             product = self.product_repo.create_product(
                 title=title,
@@ -69,5 +69,24 @@ class ProductService:
         sub_url: str,
     ) -> bool:
         with transaction.atomic():
-            self.product_repo.create_product()
+            product = self.product_repo.update_product(
+                product_id=product_id,
+                title=title,
+                price=price,
+                language=language,
+                size=size,
+                pages=pages,
+                published_date=published_date,
+                isbn=isbn,
+                description=description,
+                issue_number=issue_number,
+                product_image_url=product_image_url,
+                main_category=main_category,
+                sub_category=sub_category,
+            )
+            self.product_image_repo.update_product_image(
+                product_id=product["id"],
+                main_url=main_url,
+                sub_url=sub_url,
+            )
         return True

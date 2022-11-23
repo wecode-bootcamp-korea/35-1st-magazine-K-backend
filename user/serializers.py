@@ -2,7 +2,7 @@ import decimal
 
 from rest_framework import serializers
 
-from core.exceptions import NotFoundError
+from core.exceptions import NotFoundUserError
 from .models import User
 
 
@@ -56,13 +56,13 @@ class UserRepo:
         try:
             return UserSerializer(User.objects.get(id=user_id)).data
         except User.DoesNotExist:
-            raise NotFoundError
+            raise NotFoundUserError
 
     def get_user_by_email(self, email: str) -> object:
         try:
             return UserSerializer(User.objects.get(email=email)).data
         except User.DoesNotExist:
-            raise NotFoundError
+            raise NotFoundUserError
 
     def deduct_user_point(self, user_id: int, total_price: float) -> bool:
         """

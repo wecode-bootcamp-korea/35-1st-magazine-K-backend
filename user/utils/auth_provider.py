@@ -7,18 +7,21 @@ from django.conf import settings
 
 from ..serializers import UserRepo
 from core.exceptions import (
-    NotFoundError,
-    NotFoundUserError,
     NotAuthorizedError,
     TokenExpiredError,
     EmailValidateError,
     PasswordValidateError,
+    IncorrectPasswordError,
 )
 
 user_repo = UserRepo()
 
 
 class AuthProvider:
+    """
+    회원 인증, 인가와 관련된 서비스 로직을 제공하는 클래스
+    """
+
     def __init__(self):
         self.key = settings.SECRET_KEY
         self.expire_sec = settings.JWT_EXPIRE_TIME
@@ -27,9 +30,6 @@ class AuthProvider:
         return datetime.now().timestamp()
 
     def hashpw(self, password: str):
-        """
-        해싱된 패스워드를 반환하는 함수
-        """
         return bcrypt.hashpw(password.encode("utf8"), bcrypt.gensalt()).decode("utf8")
 
     def checkpw(self, password: str, hashed: str):
@@ -38,6 +38,8 @@ class AuthProvider:
     def _decode(self, token: str):
         """
         전달받은 토큰을 디코딩하여 유효시간을 확인하는 함수
+
+        토큰에 포함된 만료 기한과 현재 시간을 비교하여 만료여부를 결정합니다.
         """
         decoded = jwt.decode(token, self.key, algorithms=["HS256"])
         if decoded["exp"] <= self._get_curr_sec():
@@ -99,17 +101,11 @@ class AuthProvider:
         return created
 
     def signin(self, email: str, password: str):
-        try:
-            user = user_repo.get_user_by_email(email=email)
-            if self.checkpw(password, user["password"]):
-                return self.create_token(user["id"])
-            else:
-                raise NotFoundUserError()
-        except Exception as e:
-            if isinstance(e, NotFoundError):
-                raise NotFoundUserError()
-            else:
-                raise e
+        user = user_repo.get_user_by_email(email=email)
+        if self.checkpw(password, user["password"]):
+            return self.create_token(user["id"])
+        else:
+            raise IncorrectPasswordError
 
     def signout(self, token: str):
         decoded = self._decode(token)
@@ -120,12 +116,8 @@ class AuthProvider:
         전달받은 토큰에서 유효시간과 id값을 확인하는 함수
         """
         decoded = self._decode(token)
-        try:
-            user = user_repo.get_user_by_id(decoded["id"])
-            if user:
-                return user
-            else:
-                raise NotAuthorizedError
-        except Exception as e:
-            if isinstance(e, NotFoundError):
-                raise NotAuthorizedError
+        user = user_repo.get_user_by_id(decoded["id"])
+        if user:
+            return user
+        else:
+            raise NotAuthorizedError

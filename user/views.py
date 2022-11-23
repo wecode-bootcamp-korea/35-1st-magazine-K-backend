@@ -12,16 +12,16 @@ auth_provider = AuthProvider()
 def signup(request):
     params = request.data
     serializer = SignupReq(data=params)
-    serializer.is_valid()
-    auth_provider.signup(**serializer.data)
-    return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
+    serializer.is_valid(raise_exception=True)
+    created = auth_provider.signup(**serializer.data)
+    return JsonResponse({"res": created}, status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])
 def signin(request):
     params = request.data
     serializer = SigninReq(data=params)
-    serializer.is_valid()
+    serializer.is_valid(raise_exception=True)
     token = auth_provider.signin(**serializer.data)
     return JsonResponse({"access_token": token}, status=status.HTTP_200_OK)
 

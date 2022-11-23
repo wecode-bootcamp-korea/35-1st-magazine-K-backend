@@ -4,7 +4,6 @@ import jwt
 import re
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 
 from ..serializers import UserRepo
 from user.utils.exceptions import (
@@ -12,14 +11,17 @@ from user.utils.exceptions import (
     NotFoundUserError,
     NotAuthorizedError,
     TokenExpiredError,
+    EmailValidateError,
+    PasswordValidateError,
 )
+
+user_repo = UserRepo()
 
 
 class AuthProvider:
     def __init__(self):
         self.key = settings.SECRET_KEY
         self.expire_sec = settings.JWT_EXPIRE_TIME
-        self.user_repo = UserRepo()
 
     def _get_curr_sec(self):
         return datetime.now().timestamp()
@@ -52,14 +54,14 @@ class AuthProvider:
     def validate_email(self, email):
         REGEX_EMAIL = "^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         if not re.match(REGEX_EMAIL, email):
-            raise ValidationError("Invalid Email format")
+            raise EmailValidateError
 
     def validate_password(self, password):
         REGEX_PASSWORD = (
             "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~!@#$%^&*()])[A-Za-z\d~!@#$%^&*()]{8,16}"
         )
         if not re.match(REGEX_PASSWORD, password):
-            raise ValidationError("Invalid password format")
+            raise PasswordValidateError
 
     def signup(
         self,
@@ -71,17 +73,17 @@ class AuthProvider:
         self.validate_email(email=email)
         self.validate_password(password=password)
         hashpw = self.hashpw(password=password)
-        self.user_repo.create_user(
+        created = user_repo.create_user(
             email=email,
             password=hashpw,
             name=name,
             phone_number=phone_number,
         )
-        return True
+        return created
 
     def signin(self, email: str, password: str):
         try:
-            user = self.user_repo.get_user_by_email(email=email)
+            user = user_repo.get_user_by_email(email=email)
             if self.checkpw(password, user["password"]):
                 return self.create_token(user["id"])
             else:
@@ -99,7 +101,7 @@ class AuthProvider:
     def check_auth(self, token: str) -> bool:
         decoded = self._decode(token)
         try:
-            user = self.user_repo.get_user_by_id(decoded["id"])
+            user = user_repo.get_user_by_id(decoded["id"])
             if user:
                 return user
             else:

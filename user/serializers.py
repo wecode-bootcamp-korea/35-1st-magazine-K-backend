@@ -43,14 +43,14 @@ class UserRepo:
         name: str,
         phone_number: str,
     ) -> bool:
-        User.objects.create(
+        created = User.objects.create(
             email=email,
             password=password,
             name=name,
             phone_number=phone_number,
             point=self.DEFAULT_POINT,
         )
-        return True
+        return UserSerializer(created).data
 
     def get_user_by_id(self, user_id: int) -> dict:
         try:

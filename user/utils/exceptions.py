@@ -47,22 +47,13 @@ class TokenExpiredError(CustomBaseExecption):
         self.status = status.HTTP_403_FORBIDDEN
 
 
-class NoResultToRetrieveRowCountError(CustomBaseExecption):
-    def __init__(
-        self,
-        message: str = "no .execute*() has been performed on the cursor or the rowcount of the last operation is cannot be determined by the interface.",
-    ):
-        self.message = message
-        self.status = status.HTTP_500_INTERNAL_SERVER_ERROR
-
-        super(NoResultToRetrieveRowCountError, self).__init__(self.message)
+class EmailValidateError(CustomBaseExecption):
+    def __init__(self):
+        self.msg = "Email not vaild. Please check email"
+        self.status = status.HTTP_400_BAD_REQUEST
 
 
-class TooManyCursorResult(CustomBaseExecption):
-    def __init__(
-        self,
-        message: str = "cursor 실행 결과가 예상치를 초과하였습니다.",
-    ):
-        self.message = message
-        self.status = status.HTTP_500_INTERNAL_SERVER_ERROR
-        super(TooManyCursorResult, self).__init__(self.message)
+class PasswordValidateError(CustomBaseExecption):
+    def __init__(self):
+        self.msg = "Password not vaild. Please check email"
+        self.status = status.HTTP_400_BAD_REQUEST

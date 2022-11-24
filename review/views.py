@@ -17,7 +17,7 @@ class ReviewAPI(APIView):
         serializer = ReviewReq(data=params)
         serializer.is_valid(raise_exception=True)
         review_service.create_review(product_id=product_id, user_id=user["id"], **serializer.data)
-        return JsonResponse({"msg": "Created"}, status.HTTP_201_CREATED)
+        return JsonResponse({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
     def get(self, request, product_id):
         reviews = review_service.get_review_list(product_id=product_id)

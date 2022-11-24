@@ -1,4 +1,4 @@
-from .exceptions import NoPurchasedError, AlreadyExistError, NotAuthorizationError
+from core.exceptions import AlreadyExistError, NotAuthorizationError, NotPurchasedError
 from ..serializers import ReviewRepo
 from order.serializers import OrderItemRepo
 
@@ -14,7 +14,7 @@ class ReviewService:
         """
         item = order_item_repo.get_ordered_item_or_none(user_id=user_id, product_id=product_id)
         if not item:
-            raise NoPurchasedError
+            raise NotPurchasedError
 
         review = review_repo.get_review_or_none(user_id=user_id, product_id=product_id)
         if review:

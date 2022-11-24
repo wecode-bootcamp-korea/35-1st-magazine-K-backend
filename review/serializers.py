@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Review
-from .utils.exceptions import NotExistError
+from core.exceptions import NotFoundReviewError
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -42,7 +42,7 @@ class ReviewRepo:
             review = Review.objects.get(id=review_id)
             return review
         except Review.DoesNotExist:
-            raise NotExistError
+            raise NotFoundReviewError
 
     def update_review_content(self, review_id: int, content: str) -> bool:
         Review.objects.filter(id=review_id).update(content=content)

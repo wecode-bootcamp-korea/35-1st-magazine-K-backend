@@ -101,3 +101,34 @@ class OutOfRangeError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "The number of products cannot be less than one. Please check number"
     default_code = "out_of_range"
+
+
+"""
+리뷰 관련 예외처리
+"""
+
+
+class NotFoundReviewError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Review not found. Please check review_id"
+    default_code = "review_not_found"
+
+
+class NotPurchasedError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = (
+        "Do not have permission to create a review. Please check user purchased the product"
+    )
+    default_code = "not_permission"
+
+
+class AlreadyExistError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The review user wrote exists. Please check"
+    default_code = "already_exist"
+
+
+class NotAuthorizationError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "This review was not written by this user. Please check user_id"
+    default_code = "not_permission"
